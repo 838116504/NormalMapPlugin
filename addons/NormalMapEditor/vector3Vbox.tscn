@@ -1,0 +1,107 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://addons/NormalMapEditor/vector3Vbox.gd" type="Script" id=1]
+[ext_resource path="res://addons/NormalMapEditor/limitFloatEdit.gd" type="Script" id=2]
+[ext_resource path="res://addons/NormalMapEditor/vector3Panel.gd" type="Script" id=3]
+
+[node name="vector3Panel" type="Panel"]
+margin_right = 76.0
+margin_bottom = 80.0
+rect_min_size = Vector2( 76, 80 )
+script = ExtResource( 3 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="vector3Vbox" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="xHbox" type="HBoxContainer" parent="vector3Vbox"]
+margin_right = 76.0
+margin_bottom = 24.0
+size_flags_horizontal = 3
+custom_constants/separation = 0
+
+[node name="xLabel" type="Label" parent="vector3Vbox/xHbox"]
+margin_right = 16.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 16, 24 )
+size_flags_vertical = 3
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+text = "X"
+align = 1
+valign = 1
+
+[node name="LineEdit" type="Panel" parent="vector3Vbox/xHbox"]
+margin_left = 16.0
+margin_right = 76.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 60, 24 )
+size_flags_horizontal = 3
+script = ExtResource( 2 )
+minValue = -360.0
+maxValue = 360.0
+
+[node name="yHbox" type="HBoxContainer" parent="vector3Vbox"]
+margin_top = 28.0
+margin_right = 76.0
+margin_bottom = 52.0
+size_flags_horizontal = 3
+custom_constants/separation = 0
+
+[node name="yLabel" type="Label" parent="vector3Vbox/yHbox"]
+margin_right = 16.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 16, 24 )
+size_flags_vertical = 3
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+text = "Y"
+align = 1
+valign = 1
+
+[node name="LineEdit" type="Panel" parent="vector3Vbox/yHbox"]
+margin_left = 16.0
+margin_right = 76.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 60, 24 )
+size_flags_horizontal = 3
+script = ExtResource( 2 )
+minValue = -360.0
+maxValue = 360.0
+
+[node name="zHbox" type="HBoxContainer" parent="vector3Vbox"]
+margin_top = 56.0
+margin_right = 76.0
+margin_bottom = 80.0
+size_flags_horizontal = 3
+custom_constants/separation = 0
+
+[node name="zLabel" type="Label" parent="vector3Vbox/zHbox"]
+margin_right = 16.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 16, 24 )
+size_flags_vertical = 3
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+text = "Z"
+align = 1
+valign = 1
+
+[node name="LineEdit" type="Panel" parent="vector3Vbox/zHbox"]
+margin_left = 16.0
+margin_right = 76.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 60, 24 )
+size_flags_horizontal = 3
+script = ExtResource( 2 )
+minValue = -360.0
+maxValue = 360.0
+[connection signal="resized" from="vector3Vbox" to="." method="_on_vector3Vbox_resized"]
+[connection signal="value_changed" from="vector3Vbox/xHbox/LineEdit" to="." method="_on_LineEdit_value_changed"]
+[connection signal="value_changed" from="vector3Vbox/yHbox/LineEdit" to="." method="_on_LineEdit_value_changed"]
+[connection signal="value_changed" from="vector3Vbox/zHbox/LineEdit" to="." method="_on_LineEdit_value_changed"]

@@ -1,0 +1,76 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://addons/NormalMapEditor/layerItem.gd" type="Script" id=1]
+[ext_resource path="res://addons/NormalMapEditor/layerItemBg.gd" type="Script" id=2]
+
+[node name="item" type="HBoxContainer"]
+margin_right = 100.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 100, 24 )
+mouse_filter = 2
+size_flags_horizontal = 3
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="icon" type="TextureRect" parent="."]
+margin_right = 16.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 16, 16 )
+mouse_filter = 2
+size_flags_vertical = 3
+expand = true
+stretch_mode = 4
+
+[node name="nameBg" type="ColorRect" parent="."]
+self_modulate = Color( 1, 1, 1, 0 )
+margin_left = 20.0
+margin_right = 80.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 60, 24 )
+size_flags_horizontal = 3
+size_flags_vertical = 3
+color = Color( 0.25, 0.5, 0.5, 1 )
+script = ExtResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false,
+"_editor_description_": ""
+}
+
+[node name="nameLabel" type="Label" parent="nameBg"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+rect_min_size = Vector2( 0, 16 )
+mouse_filter = 1
+size_flags_horizontal = 3
+size_flags_vertical = 2
+text = "test"
+clip_text = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="nameEdit" type="LineEdit" parent="nameBg"]
+visible = false
+anchor_bottom = 1.0
+margin_right = 58.0
+margin_bottom = -576.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="visible" type="TextureButton" parent="."]
+margin_left = 84.0
+margin_right = 100.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 16, 16 )
+size_flags_vertical = 3
+toggle_mode = true
+expand = true
+stretch_mode = 3
+[connection signal="pressed" from="nameBg" to="." method="_on_nameBg_pressed"]
+[connection signal="right_pressed" from="nameBg" to="." method="_on_nameBg_right_pressed"]
+[connection signal="modal_closed" from="nameBg/nameEdit" to="." method="_on_nameEdit_modal_closed"]
+[connection signal="text_entered" from="nameBg/nameEdit" to="." method="_on_nameEdit_text_entered"]
+[connection signal="pressed" from="visible" to="." method="_on_visible_pressed"]

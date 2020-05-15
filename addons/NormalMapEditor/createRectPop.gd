@@ -1,11 +1,12 @@
 tool
 extends WindowDialog
 
-const SECTION = "CreatePolygonPop"
+const SECTION = "CreateRectPop"
 
 onready var editNormalPop = get_node("../editNormalPop")
-onready var vertexCountSpinBox = $vbox/hbox/vbox/vertexCountHbox/SpinBox
-onready var radiusSpinBox = $vbox/hbox/vbox/radiusHbox/SpinBox
+onready var sizeVbox = $vbox/hbox/vbox/sizeHbox/sizeVbox
+onready var rotIcon = $vbox/hbox/vbox/rotHbox/hbox/rotModifyBtn/rotDraw
+onready var rotVbox = $vbox/hbox/vbox/rotHbox/rotVbox
 onready var normalTypeOptBtn = $vbox/hbox/vbox2/normalTypeHbox/OptBtn
 onready var normal = $vbox/hbox/vbox2/normalHbox/vbox/normalVbox
 onready var normalIcon = $vbox/hbox/vbox2/normalHbox/vbox/hbox/modifyBtn/normalDraw
@@ -17,12 +18,11 @@ onready var bumpHeightHSlider = $vbox/hbox/vbox2/bumpHeightHbox/bumpHeightHSlide
 onready var blurSpinBox = $vbox/hbox/vbox2/blurHbox/SpinBox
 onready var bumpSpinBox = $vbox/hbox/vbox2/bumpHbox/SpinBox
 
-var points = null
-
 func _ready():
 	var parent = find_parent("mainPanel")
 	if parent != null && get_tree().has_group("normalMapScreen") && parent == get_tree().get_nodes_in_group("normalMapScreen")[0]:
 		add_to_group("config")
+	templatePanel.add_pop_menu_opt("set rot", self, "on_templatePanel_select_rot")
 
 func _exit_tree():
 	if is_in_group("config"):
@@ -30,10 +30,9 @@ func _exit_tree():
 
 func load_data(cfg:ConfigFile):
 	if cfg.has_section(SECTION):
-		vertexCountSpinBox.value = cfg.get_value(SECTION, "vertex count", 3)
-		radiusSpinBox.value = cfg.get_value(SECTION, "radius", 10)
+		rotVbox.set_quat(cfg.get_value(SECTION, "rot", Quat(Vector3.ZERO)))
+		sizeVbox.set_vector(cfg.get_value(SECTION, "size", Vector2(10, 10)))
 		set_normal_type(cfg.get_value(SECTION, "normal_type", 0))
-		#print("normal type: ", str(normalTypeOptBtn.get_selected_id()))
 		normal.set_quat(cfg.get_value(SECTION, "normal", Quat(Vector3.ZERO)))
 		embossCheckBox.pressed = cfg.get_value(SECTION, "use_emboss", true)
 		embossHSlider.value = cfg.get_value(SECTION, "emboss", 0.1)
@@ -43,8 +42,8 @@ func load_data(cfg:ConfigFile):
 		bumpSpinBox.value = cfg.get_value(SECTION, "bump", 60)
 
 func save_data(cfg:ConfigFile):
-	cfg.set_value(SECTION, "vertex count", vertexCountSpinBox.value)
-	cfg.set_value(SECTION, "radius", radiusSpinBox.value)
+	cfg.set_value(SECTION, "rot", rotVbox.get_quat())
+	cfg.set_value(SECTION, "size", sizeVbox.get_vector())
 	cfg.set_value(SECTION, "normal_type", normalTypeOptBtn.get_selected_id())
 	cfg.set_value(SECTION, "normal", normal.get_quat())
 	cfg.set_value(SECTION, "use_emboss", embossCheckBox.pressed)
@@ -53,18 +52,6 @@ func save_data(cfg:ConfigFile):
 	cfg.set_value(SECTION, "bump_height", bumpHeightHSlider.value)
 	cfg.set_value(SECTION, "blur", blurSpinBox.value)
 	cfg.set_value(SECTION, "bump", bumpSpinBox.value)
-
-func get_points():
-	if points != null:
-		return points
-	
-	var ret = []
-	ret.resize(vertexCountSpinBox.value)
-	var r = radiusSpinBox.value
-	var pos = $vbox/hbox/vbox/PosHbox/posVbox.get_vector()
-	for i in ret.size():
-		ret[i] = Vector2(cos(float(i) / ret.size() * 2.0 * PI), sin(float(i) / ret.size() * 2.0 * PI)) * r + pos
-	return ret
 
 func get_normal_type():
 	return normalTypeOptBtn.get_selected_id()
@@ -77,24 +64,20 @@ func get_normal_data():
 				blurSpinBox.value, bumpSpinBox.value, \
 				bumpCheckBox.pressed, embossCheckBox.pressed ]
 
-func set_points(p_points):
-	$vbox/hbox/vbox.hide()
-	points = p_points
+func get_pos():
+	return $vbox/hbox/vbox/PosHbox/posVbox.get_vector()
+
+func get_my_size():
+	return sizeVbox.get_vector()
+
+func get_rot():
+	return rotVbox.get_quat()
 
 func set_pos(p_pos:Vector2):
-	$vbox/hbox/vbox.show()
-	points = null
 	$vbox/hbox/vbox/PosHbox/posVbox.set_vector(p_pos)
 
-func set_radius(p_radius:float):
-	$vbox/hbox/vbox.show()
-	points = null
-	radiusSpinBox.value = p_radius
-
-func set_vertex_count(p_count:int):
-	$vbox/hbox/vbox.show()
-	points = null
-	vertexCountSpinBox.value = p_count
+func set_my_size(p_size:Vector2):
+	sizeVbox.set_vector(p_size)
 
 func set_normal_type(p_type:int):
 	match p_type:
@@ -172,3 +155,21 @@ func _on_OptBtn_item_selected(id):
 func _on_templatePanel_select_quat(quat):
 	normal.set_quat(quat)
 
+func on_templatePanel_select_rot(quat):
+	rotVbox.set_quat(quat)
+
+
+func _on_rotModifyBtn_pressed():
+	editNormalPop.set_euler(rotVbox.get_euler())
+	editNormalPop.popup_centered()
+	yield(editNormalPop, "popup_hide")
+	yield(get_tree(), "idle_frame")
+	if editNormalPop.choosed == editNormalPop.NONE:
+		return
+	rotVbox.set_quat(editNormalPop.get_quat())
+	if editNormalPop.choosed == editNormalPop.MODIFY_SAVE:
+		templatePanel.add_template(editNormalPop.get_quat())
+
+
+func _on_rotVbox_value_changed():
+	rotIcon.set_quat(rotVbox.get_quat())

@@ -6,6 +6,9 @@ const PolygonShowNode = preload("polygonShowNode.gd")
 const LayerItem = preload("layerItem.tscn")
 const singleNormalShader = preload("singleNormalShader.shader")
 const CreatePolygonMode = preload("createPolygonMode.gd")
+const CreateRectMode = preload("createRectMode.gd")
+const MagicMode = preload("magicMode.gd")
+const SelectMode = preload("selectMode.gd")
 
 # 可視眼︰ GuiVisibilityVisible
 # 隱藏眼︰ GuiVisibilityHidden
@@ -23,7 +26,7 @@ const CreatePolygonMode = preload("createPolygonMode.gd")
 
 const CONFIG_FILENAME = "config.cfg"
 
-enum { MODE_NONE = 0, MODE_CREATE_POLYGON }
+enum { MODE_NONE = 0, MODE_CREATE_POLYGON, MODE_CREATE_RECT, MODE_MAGIC, MODE_SELECT }
 
 var modes
 var mode
@@ -49,12 +52,15 @@ onready var sourceBg = $vbox/Panel/centerCon/bg
 onready var sourceImg = $vbox/Panel/centerCon/bg/img
 onready var askSavePop = $askSavePop
 onready var createPolygonPop = $createPolygonPop
+onready var createRectPop = $createRectPop
 onready var editNormalPop = $editNormalPop
 onready var toolSelect = $vbox/hbox/select
 onready var toolRect = $vbox/hbox/rect
 onready var toolPolygon = $vbox/hbox/polygon
 onready var toolMagic = $vbox/hbox/magic
 onready var toolShowToggle = $vbox/hbox/showToggle
+onready var toolScopeLabel = $vbox/hbox/scopeLabel
+onready var toolScopeEdit = $vbox/hbox/scopeEdit
 onready var toolXLabel = $vbox/hbox/xLabel
 onready var toolXEdit = $vbox/hbox/xEdit
 onready var toolYLabel = $vbox/hbox/yLabel
@@ -105,7 +111,7 @@ class Item:
 		type = configFile.get_value(section, "type")
 		match type:
 			ITEM_TYPE_RECT:
-				data = RectItem.new()
+				data = RectItem.new(sourceTex)
 				data.load_data(configFile, section)
 			ITEM_TYPE_POLYGON:
 				data = PolygonItem.new(sourceTex)
@@ -114,17 +120,15 @@ class Item:
 class RectItem:
 	var size:Vector2
 	var rot := Quat(Vector3.ZERO)
-	var normal := Vector3(0, 0, 1)
 	var renderNode
 	var showNode
 	var listNode
 	var mainPanel
 	
-	func _init():
-		renderNode = Polygon2D.new()
-		renderNode.material.shader = singleNormalShader
-		renderNode.material.set_shader_param("normal", normal)
-		showNode = PolygonShowNode.instance()
+	func _init(p_sourceTex):
+		renderNode = PolygonRenderNode.new()
+		renderNode.sourceTex = p_sourceTex
+		showNode = PolygonShowNode.new()
 		showNode.color = Color(0.0, 0.0, 0.8, 0.4)
 		listNode = LayerItem.instance()
 		listNode.item = self
@@ -133,7 +137,10 @@ class RectItem:
 		else:
 			listNode.iconName = "CollisionShape2D"
 		listNode.set_item_name("item")
-		
+	
+	func set_show_color(p_color):
+		showNode.color = p_color
+	
 	func set_name(p_name):
 		listNode.set_item_name(p_name)
 	
@@ -187,23 +194,23 @@ class RectItem:
 		
 		match p_dir:
 			DIR_LT:
-				return get_pos() + rect2.position
+				return rect2.position
 			DIR_L:
-				return get_pos() + Vector2(rect2.position.x, (rect2.position.y + rect2.end.y) / 2)
+				return Vector2(rect2.position.x, (rect2.position.y + rect2.end.y) / 2)
 			DIR_LB:
-				return get_pos() + Vector2(rect2.position.x, rect2.end.y)
+				return Vector2(rect2.position.x, rect2.end.y)
 			DIR_T:
-				return get_pos() + Vector2((rect2.position.x + rect2.end.x) / 2, rect2.position.y)
+				return Vector2((rect2.position.x + rect2.end.x) / 2, rect2.position.y)
 			DIR_C:
-				return get_pos() + Vector2((rect2.position.x + rect2.end.x) / 2, (rect2.position.y + rect2.end.y) / 2)
+				return Vector2((rect2.position.x + rect2.end.x) / 2, (rect2.position.y + rect2.end.y) / 2)
 			DIR_B:
-				return get_pos() + Vector2((rect2.position.x + rect2.end.x) / 2, rect2.end.y)
+				return Vector2((rect2.position.x + rect2.end.x) / 2, rect2.end.y)
 			DIR_RT:
-				return get_pos() + Vector2(rect2.end.x, rect2.position.y)
+				return Vector2(rect2.end.x, rect2.position.y)
 			DIR_R:
-				return get_pos() + Vector2(rect2.end.x, (rect2.position.y + rect2.end.y) / 2)
+				return Vector2(rect2.end.x, (rect2.position.y + rect2.end.y) / 2)
 			DIR_RB:
-				return get_pos() + rect2.end
+				return rect2.end
 	
 	func set_item_id(p_newId):
 		if renderNode.get_parent():
@@ -220,7 +227,7 @@ class RectItem:
 		p_mainPanel.show_pos_tool()
 		p_mainPanel.show_size_tool()
 		p_mainPanel.show_rotation_tool()
-		p_mainPanel.show_normal_tool()
+		p_mainPanel.show_normal_type_tool()
 		listNode.select()
 	
 	func unselect(p_mainPanel):
@@ -230,7 +237,7 @@ class RectItem:
 		p_mainPanel.hide_pos_tool()
 		p_mainPanel.hide_size_tool()
 		p_mainPanel.hide_rotation_tool()
-		p_mainPanel.hide_normal_tool()
+		p_mainPanel.hide_normal_type_tool()
 		listNode.unselect()
 	
 	func destroy():
@@ -266,7 +273,7 @@ class RectItem:
 		temp = rot.xform(Vector3(0, size.y, 0))
 		points[3] = Vector2(temp.x, temp.y)
 		
-		renderNode.polygon = points
+		renderNode.set_points(points)
 		showNode.set_points(points)
 	
 	func set_rot(p_rad:Quat):
@@ -278,18 +285,56 @@ class RectItem:
 	func get_rot() -> Quat:
 		return rot
 	
-	func set_normal(p_normal:Vector3):
-		normal = p_normal
-		renderNode.material.set_shader_param("normal", normal)
-	
-	func get_normal() -> Vector3:
-		return normal
-	
 	func set_single_normal(p_vec:Vector3):
-		set_normal(p_vec)
+		renderNode.set_normal_data(renderNode.NT_SINGLE, p_vec)
 	
 	func get_single_normal() -> Vector3:
-		return get_normal()
+		return get_normal_data()
+	
+	func set_auto_normal(emboss_height:float, bump_height:float, blur:int, bump:int, with_distance:bool, with_emboss:bool):
+		renderNode.set_normal_data(renderNode.NT_AUTO, [emboss_height, bump_height, blur, bump, with_distance, with_emboss])
+	
+	func get_normal_type():
+		return renderNode.type
+	
+	func get_normal_data():
+		return renderNode.data
+	
+	func get_emboss() -> float:
+		return renderNode.data[0]
+	
+	func set_emboss(p_emboss:float):
+		set_auto_normal(p_emboss, renderNode.data[1], renderNode.data[2], renderNode.data[3], renderNode.data[4], renderNode.data[5])
+
+	func get_bump_height() -> float:
+		return renderNode.data[1]
+	
+	func set_bump_height(p_bumpHeight:float):
+		set_auto_normal(renderNode.data[0], p_bumpHeight, renderNode.data[2], renderNode.data[3], renderNode.data[4], renderNode.data[5])
+	
+	func get_blur() -> float:
+		return renderNode.data[2]
+	
+	func set_blur(p_blur:float):
+		set_auto_normal(renderNode.data[0], renderNode.data[1], p_blur, renderNode.data[3], renderNode.data[4], renderNode.data[5])
+	
+	func get_bump() -> float:
+		return renderNode.data[3]
+	
+	func set_bump(p_bump:float):
+		set_auto_normal(renderNode.data[0], renderNode.data[1], renderNode.data[2], p_bump, renderNode.data[4], renderNode.data[5])
+	
+	func is_bump_enabled() -> bool:
+		return renderNode.data[4]
+	
+	func set_bump_enabled(p_enabled:bool):
+		set_auto_normal(renderNode.data[0], renderNode.data[1], renderNode.data[2], renderNode.data[3], p_enabled, renderNode.data[5])
+	
+	func is_emboss_enabled() -> bool:
+		return renderNode.data[5]
+	
+	func set_emboss_enabled(p_enabled:bool):
+		set_auto_normal(renderNode.data[0], renderNode.data[1], renderNode.data[2], renderNode.data[3], renderNode.data[4], p_enabled)
 	
 	func get_size():
 		return size
@@ -312,8 +357,23 @@ class RectItem:
 	func set_my_size(p_size):
 		set_size(p_size)
 	
+	func get_points():
+		return renderNode.polygon
+	
+	func get_x() -> float:
+		return get_pos().x
+	
+	func get_y() -> float:
+		return get_pos().y
+	
+	func set_x(p_x:float):
+		set_pos(Vector2(p_x, get_y()))
+	
+	func set_y(p_y:float):
+		set_pos(Vector2(get_x(), p_y))
+	
 	func set_pos(p_pos):
-		renderNode.position = p_pos
+		renderNode.set_pos(p_pos)
 		showNode.position = p_pos
 	
 	func get_pos():
@@ -324,14 +384,31 @@ class RectItem:
 		configFile.set_value(section, "pos", get_pos())
 		configFile.set_value(section, "size", get_size())
 		configFile.set_value(section, "rot", get_rot())
-		configFile.set_value(section, "normal", get_normal())
+		configFile.set_value(section, "normalType", get_normal_type())
+		match get_normal_type():
+			renderNode.NT_SINGLE:
+				configFile.set_value(section, "normal", get_normal_data())
+			renderNode.NT_AUTO:
+				configFile.set_value(section, "emboss_height", get_normal_data()[0])
+				configFile.set_value(section, "bump_height", get_normal_data()[1])
+				configFile.set_value(section, "blur", get_normal_data()[2])
+				configFile.set_value(section, "bump", get_normal_data()[3])
+				configFile.set_value(section, "with_distance", get_normal_data()[4])
+				configFile.set_value(section, "with_emboss", get_normal_data()[5])
 		configFile.set_value(section, "visible", get_visible())
 	
 	func load_data(configFile:ConfigFile, section:String):
 		set_name(configFile.get_value(section, "name", "item"))
 		set_pos(configFile.get_value(section, "pos", Vector2.ZERO))
 		set_rot_size(configFile.get_value(section, "rot", Quat(Vector3.ZERO)), configFile.get_value(section, "size", Vector2(10, 10)))
-		set_normal(configFile.get_value(section, "normal", Vector3(0, 0, 1)))
+		var normalType = configFile.get_value(section, "normalType", NT_SINGLE)
+		match normalType:
+			renderNode.NT_SINGLE:
+				set_single_normal(configFile.get_value(section, "normal", Vector3(0, 0, 1)))
+			renderNode.NT_AUTO:
+				set_auto_normal(configFile.get_value(section, "emboss_height", 0.1), configFile.get_value(section, "bump_height", 0.3), \
+					configFile.get_value(section, "blur", 5), configFile.get_value(section, "bump", 60), \
+					configFile.get_value(section, "with_distance", true), configFile.get_value(section, "with_emboss", true))
 		set_visible(configFile.get_value(section, "visible", true))
 
 
@@ -358,6 +435,9 @@ class PolygonItem:
 		else:
 			listNode.iconName = "CollisionPolygon2D"
 		listNode.set_item_name("item")
+	
+	func set_show_color(p_color):
+		showNode.color = p_color
 	
 	func set_item_id(p_newId):
 		if renderNode.get_parent():
@@ -571,7 +651,7 @@ class PolygonItem:
 	
 	func set_points(p_points):
 		showNode.set_points(p_points)
-		renderNode.polygon = p_points
+		renderNode.set_points(p_points)
 	
 	func get_points():
 		return showNode.polygon
@@ -624,15 +704,15 @@ class PolygonItem:
 				set_single_normal(configFile.get_value(section, "normal", Vector3(0, 0, 1)))
 			renderNode.NT_AUTO:
 				set_auto_normal(configFile.get_value(section, "emboss_height", 0.1), configFile.get_value(section, "bump_height", 0.3), \
-						configFile.get_value(section, "blur", 5), configFile.get_value(section, "bump", 60), \
-						configFile.get_value(section, "with_distance", true), configFile.get_value(section, "with_emboss", true))
+					configFile.get_value(section, "blur", 5), configFile.get_value(section, "bump", 60), \
+					configFile.get_value(section, "with_distance", true), configFile.get_value(section, "with_emboss", true))
 		set_visible(configFile.get_value(section, "visible", true))
 
 func _init():
 	iconMaterial = preload("res://addons/NormalMapEditor/iconMaterial.tres")
 	selectIconMaterial = preload("res://addons/NormalMapEditor/selectIconMaterial.tres")
 	version = undoRedo.get_version()
-	modes = [ dummy.new(), CreatePolygonMode.new()]
+	modes = [ dummy.new(), CreatePolygonMode.new(), CreateRectMode.new(), MagicMode.new(), SelectMode.new() ]
 	mode = modes[MODE_NONE]
 	selectedMode = mode
 
@@ -658,8 +738,6 @@ func on_set_project(path:String):
 				return
 			askSavePop.CHOOSED_OK:
 				save_project()
-	undoRedo.clear_history()
-	version = undoRedo.get_version()
 	set_project(path)
 
 func set_project(path:String):
@@ -676,6 +754,8 @@ func set_project(path:String):
 	sourceImg.material.set_shader_param("normal_texture", resultView.get_texture())
 	view.grab_focus()
 	view.grab_click_focus()
+	undoRedo.clear_history()
+	version = undoRedo.get_version()
 
 func load_project(path:String):
 	var configFile = ConfigFile.new()
@@ -759,13 +839,17 @@ func clear_item():
 			i.data.destroy()
 	items.clear()
 
-func add_rect(p_pos:Vector2, p_pointData, p_normal:Vector3, p_name = "item", p_visible = true):
+func add_rect(p_pointData, p_normalType, p_normalData, p_name = "item", p_visible = true):
 	var item = Item.new()
 	item.type = ITEM_TYPE_RECT
-	item.data = RectItem.new()
-	item.data.set_pos(p_pos)
-	item.data.set_rot_size(p_pointData[0], p_pointData[1])
-	item.data.set_noraml(p_normal)
+	item.data = RectItem.new(source)
+	item.data.set_pos(p_pointData[0])
+	item.data.set_rot_size(p_pointData[1], p_pointData[2])
+	match p_normalType:
+		NT_SINGLE:
+			item.data.set_single_normal(p_normalData)
+		NT_AUTO:
+			item.data.set_auto_normal(p_normalData[0], p_normalData[1], p_normalData[2], p_normalData[3], p_normalData[4], p_normalData[5])
 	item.data.set_name(p_name)
 	item.data.set_visible(p_visible)
 	#item.data.showNode.connect("vertex_selected", self, "on_item_vertex_selected", [item])
@@ -805,8 +889,8 @@ func add_item(item):
 	showNodeParent.add_child(item.data.showNode)
 	
 	layerDock.add_item(item.data.listNode)
-	if mode != modes[MODE_NONE] && mode.has_method("add_item_process"):
-		mode.add_item_process(item.data.showNode)
+#	if mode != modes[MODE_NONE] && mode.has_method("add_item_process"):
+#		mode.add_item_process(item.data.showNode)
 
 func delete_item(p_itemId):
 	var i = items[p_itemId]
@@ -871,10 +955,8 @@ func on_item_selected(item):
 			return
 		
 		if mode != modes[MODE_NONE]:
-			undoRedo.create_action("Toggle mode")
-			undoRedo.add_do_method(self, "to_mode", modes[MODE_NONE])
-			undoRedo.add_undo_method(self, "to_mode", mode)
-			undoRedo.commit_action()
+			to_mode(modes[MODE_NONE])
+			
 		select(-1, id)
 	else:
 		print("[mainPanel::on_item_selected] Can not find item in items!")
@@ -918,33 +1000,57 @@ func on_drag_list_node(p_listNode, p_newId):
 			print("Drag list item")
 			return
 
-func to_mode(p_mode):
-	if mode != modes[MODE_NONE] && mode.has_method("exit"):
-		mode.exit()
+func set_mode(p_mode):
 	mode = p_mode
-	if mode != modes[MODE_NONE] && mode.has_method("enter"):
-		mode.enter(self)
+
+func to_mode(p_mode):
+	if p_mode == mode:
+		return
+	
+	var exitData = null
+	var hasModeExit:bool = mode != modes[MODE_NONE] && mode.has_method("exit")
+	var hasModeEnter:bool = p_mode != modes[MODE_NONE] && p_mode.has_method("enter")
+	undoRedo.create_action("Toggle mode")
+	if hasModeExit:
+		if mode.has_method("get_exit_data"):
+			exitData = mode.get_exit_data()
+		undoRedo.add_do_method(mode, "exit")
+	undoRedo.add_do_method(self, "set_mode", p_mode)
+	if hasModeEnter:
+		undoRedo.add_do_method(p_mode, "enter", self, null)
+	
+	if hasModeEnter:
+		undoRedo.add_undo_method(p_mode, "exit")
+	undoRedo.add_undo_method(self, "set_mode", mode)
+	if hasModeExit:
+		undoRedo.add_undo_method(mode, "enter", self, exitData)
+	undoRedo.commit_action()
+	print("Toggle mode")
 
 func _on_select_pressed():
-	pass
+	if source == null:
+		return
 
+	to_mode(modes[MODE_SELECT])
 
 func _on_rect_pressed():
-	pass # Replace with function body.
+	if source == null:
+		return
+	
+	to_mode(modes[MODE_CREATE_RECT])
 
 
 func _on_polygon_pressed():
 	if source == null:
 		return
 	
-	undoRedo.create_action("Toggle mode")
-	undoRedo.add_do_method(self, "to_mode", modes[MODE_CREATE_POLYGON])
-	undoRedo.add_undo_method(self, "to_mode", mode)
-	undoRedo.commit_action()
-	print("Toggle mode")
+	to_mode(modes[MODE_CREATE_POLYGON])
 
 func _on_magic_pressed():
-	pass
+	if source == null:
+		return
+	
+	to_mode(modes[MODE_MAGIC])
 
 
 func get_selected_obj():
@@ -1043,8 +1149,8 @@ func delete_selected_item():
 		ITEM_TYPE_POLYGON:
 			undoRedo.add_undo_method(self, "add_polygon", obj.get_points(), obj.get_normal_type(), obj.get_normal_data(), obj.get_name(), obj.get_visible())
 		ITEM_TYPE_RECT:
-			var pointData = [ obj.get_rot(), obj.get_size() ]
-			undoRedo.add_undo_method(self, "add_rect", obj.get_pos(), pointData, obj.get_normal(), obj.get_name(), obj.get_visible())
+			var pointData = [ obj.get_pos(), obj.get_rot(), obj.get_size() ]
+			undoRedo.add_undo_method(self, "add_rect", pointData, obj.get_normal_type(), obj.get_normal_data(), obj.get_name(), obj.get_visible())
 	undoRedo.add_undo_method(self, "set_item_id", items.size() - 1, selectedItemId)
 	unselect_undo()
 	undoRedo.commit_action()
@@ -1278,10 +1384,10 @@ func show_normal_type_tool():
 		print("[mainPanel::show_normal_type_tool] obj is null!")
 		return
 	var type = obj.get_normal_type()
+	toolNormalTypeOptBtn.select(type)
 	match type:
 		NT_SINGLE:
 			show_normal_tool()
-
 		NT_AUTO:
 			show_auto_normal_tool()
 
@@ -1293,11 +1399,20 @@ func hide_normal_type_tool():
 		print("[mainPanel::hide_normal_type_tool] obj is null!")
 		return
 	var type = obj.get_normal_type()
+	toolNormalTypeOptBtn
 	match type:
 		NT_SINGLE:
 			hide_normal_tool()
 		NT_AUTO:
 			hide_auto_normal_tool()
+
+func show_scope_tool():
+	toolScopeLabel.show()
+	toolScopeEdit.show()
+
+func hide_scope_tool():
+	toolScopeLabel.hide()
+	toolScopeEdit.hide()
 
 func selected_obj_set_dir_pos(p_dir, p_pos):
 	get_selected_obj().set_dir_pos(p_dir, p_pos)
@@ -1370,6 +1485,15 @@ func _on_createPolygonPop_CreateBtn_pressed():
 	undoRedo.commit_action()
 	print("Add polygon")
 
+
+func _on_createRectPop_CreateBtn_pressed():
+	createRectPop.hide()
+	undoRedo.create_action("Add rect")
+	var pointData = [ createRectPop.get_pos(), createRectPop.get_rot(), createRectPop.get_my_size() ]
+	undoRedo.add_do_method(self, "add_rect", pointData, createRectPop.get_normal_type(), createRectPop.get_normal_data())
+	undoRedo.add_undo_method(self, "delete_item", items.size())
+	undoRedo.commit_action()
+	print("Add rect")
 
 func _on_mainScreen_visibility_changed():
 	if visible && view != null:
@@ -1654,7 +1778,7 @@ func _on_normalTypeOptBtn_item_selected(id):
 			undoRedo.add_do_method(self, "show_normal_type_tool")
 			undoRedo.add_undo_method(self, "hide_normal_type_tool")
 			undoRedo.add_undo_method(self, "selected_obj_set_auto_normal", { 0:toolEmbossCheckBox.pressed, \
-					1:toolEmbossEdit.value, 2:toolBumpCheckBox.pressed, 3:toolBumpHeightEdit.value, 4:toolBlurEdit.value, 5:toolBumpEdit.value})
+				1:toolEmbossEdit.value, 2:toolBumpCheckBox.pressed, 3:toolBumpHeightEdit.value, 4:toolBlurEdit.value, 5:toolBumpEdit.value})
 			undoRedo.add_undo_method(self, "show_normal_type_tool")
 			undoRedo.commit_action()
 			print("Set normal type")
@@ -1662,7 +1786,7 @@ func _on_normalTypeOptBtn_item_selected(id):
 			undoRedo.create_action("Set auto type")
 			undoRedo.add_do_method(self, "hide_normal_type_tool")
 			undoRedo.add_do_method(self, "selected_obj_set_auto_normal", { 0:toolEmbossCheckBox.pressed, \
-					1:toolEmbossEdit.value, 2:toolBumpCheckBox.pressed, 3:toolBumpHeightEdit.value, 4:toolBlurEdit.value, 5:toolBumpEdit.value})
+				1:toolEmbossEdit.value, 2:toolBumpCheckBox.pressed, 3:toolBumpHeightEdit.value, 4:toolBlurEdit.value, 5:toolBumpEdit.value})
 			undoRedo.add_do_method(self, "show_normal_type_tool")
 			undoRedo.add_undo_method(self, "hide_normal_type_tool")
 			undoRedo.add_undo_method(self, "selected_obj_set_single_normal", toolNormalDraw.get_normal())
@@ -1686,3 +1810,4 @@ func _on_posDir_dir_changed(newDir):
 	toolYEdit.value = pos.y
 	for i in connectData.size():
 		toolYEdit.connect("value_changed", connectData[i]["target"], connectData[i]["method"], connectData[i]["binds"], connectData[i]["flags"])
+

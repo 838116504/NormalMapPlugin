@@ -8,6 +8,9 @@ const Template = preload("template.tscn")
 #signal select_normal(normal)
 signal select_quat(quat)
 
+# 每个选項key为选項id，值为[調用对象，調用方法名, 文字 ]，調用方法会傳入該模板的四元数
+var popMenuOpts = {}
+
 func update_template():
 	var templateRes = get_template_res()
 	var templateCount = 0
@@ -22,6 +25,10 @@ func update_template():
 			temp = Template.instance()
 			temp.connect("pressed", self, "_on_template_pressed", [temp])
 			temp.connect("removed", self, "_on_template_removed", [temp])
+			if popMenuOpts.size() > 0:
+				temp.connect("custom_selected", self, "on_template_custom_selected", [temp])
+				for i in popMenuOpts.keys():
+					temp.add_popup_menu_option(popMenuOpts[i][2], i)
 			gridContainer.add_child(temp)
 	elif templateCount < gridContainer.get_child_count():
 		for i in gridContainer.get_child_count() - templateCount:
@@ -55,6 +62,11 @@ func add_template(p_quat:Quat):
 	temp.id = gridContainer.get_child_count()
 	temp.connect("pressed", self, "_on_template_pressed", [temp])
 	temp.connect("removed", self, "_on_template_removed", [temp])
+	if popMenuOpts.size() > 0:
+		temp.connect("custom_selected", self, "on_template_custom_selected", [temp])
+		for i in popMenuOpts.keys():
+			temp.add_popup_menu_option(popMenuOpts[i][2], i)
+	
 	gridContainer.add_child(temp)
 	get_template_res().add_template(p_quat)
 	#print("add template normal: ", str(p_normal))
@@ -70,6 +82,20 @@ func _on_template_removed(p_template):
 	get_template_res().remove_template(p_template.id)
 	p_template.queue_free()
 	
+
+func add_pop_menu_opt(p_text:String, p_obj, p_method:String):
+	var id = popMenuOpts.size() + 1
+	var child
+	for i in gridContainer.get_child_count():
+		child = gridContainer.get_child(i)
+		child.add_popup_menu_option(p_text, id)
+		if !child.is_connected("custom_selected", self, "on_template_custom_selected"):
+			child.connect("custom_selected", self, "on_template_custom_selected", [ child ])
+	popMenuOpts[id] = [ p_obj, p_method, p_text ]
+
+func on_template_custom_selected(id, p_template):
+	if popMenuOpts.has(id):
+		popMenuOpts[id][0].call(popMenuOpts[id][1], p_template.get_quat())
 
 func _on_ScrollContainer_resized():
 	if gridContainer:

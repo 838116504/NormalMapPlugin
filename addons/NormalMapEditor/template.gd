@@ -3,6 +3,7 @@ extends Control
 
 signal pressed
 signal removed
+signal custom_selected(id)
 
 onready var popupMenu = $PopupMenu
 
@@ -42,9 +43,14 @@ func _gui_input(event):
 						popupMenu.popup(Rect2(get_global_mouse_position(), popupMenu.rect_size))
 					rightPress = false
 
+func add_popup_menu_option(p_text:String, p_id):
+	$PopupMenu.add_item(p_text, p_id)
+
 func _on_PopupMenu_id_pressed(id):
 	if id == 0:
 		emit_signal("removed")
+	else:
+		emit_signal("custom_selected", id)
 
 
 func _on_self_mouse_entered():

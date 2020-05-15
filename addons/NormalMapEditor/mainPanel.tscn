@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=2]
+[gd_scene load_steps=35 format=2]
 
 [ext_resource path="res://addons/NormalMapEditor/Panel.gd" type="Script" id=1]
 [ext_resource path="res://addons/NormalMapEditor/vector2Vbox.tscn" type="PackedScene" id=2]
@@ -28,6 +28,7 @@
 [ext_resource path="res://addons/NormalMapEditor/dropBtn.gd" type="Script" id=26]
 [ext_resource path="res://addons/NormalMapEditor/PopupPanel.gd" type="Script" id=27]
 [ext_resource path="res://addons/NormalMapEditor/limitFloatEdit.gd" type="Script" id=28]
+[ext_resource path="res://addons/NormalMapEditor/createRectPop.gd" type="Script" id=29]
 
 [sub_resource type="Image" id=7]
 data = {
@@ -208,6 +209,25 @@ margin_right = 184.0
 margin_bottom = 32.0
 rect_min_size = Vector2( 32, 32 )
 script = ExtResource( 17 )
+
+[node name="scopeLabel" type="Label" parent="vbox/hbox"]
+visible = false
+margin_left = 188.0
+margin_top = 9.0
+margin_right = 195.0
+margin_bottom = 23.0
+size_flags_vertical = 2
+text = "Scope"
+valign = 1
+
+[node name="scopeEdit" type="SpinBox" parent="vbox/hbox"]
+visible = false
+margin_left = 188.0
+margin_top = 4.0
+margin_right = 262.0
+margin_bottom = 28.0
+size_flags_vertical = 4
+max_value = 255.0
 
 [node name="xLabel" type="Label" parent="vbox/hbox"]
 visible = false
@@ -424,6 +444,7 @@ visible = false
 margin_left = 267.0
 margin_right = 346.0
 margin_bottom = 32.0
+pressed = true
 text = "emboss"
 
 [node name="embossEdit" type="Panel" parent="vbox/hbox"]
@@ -445,6 +466,7 @@ visible = false
 margin_left = 267.0
 margin_right = 332.0
 margin_bottom = 32.0
+pressed = true
 text = "bump"
 
 [node name="bumpHeightEdit" type="Panel" parent="vbox/hbox"]
@@ -589,7 +611,7 @@ margin_left = 182.0
 margin_top = 198.0
 margin_right = 682.0
 margin_bottom = 408.0
-rect_min_size = Vector2( 500, 210 )
+rect_min_size = Vector2( 600, 210 )
 popup_exclusive = true
 window_title = "Create Polygon"
 script = ExtResource( 14 )
@@ -613,7 +635,7 @@ __meta__ = {
 }
 
 [node name="hbox" type="HBoxContainer" parent="createPolygonPop/vbox"]
-margin_right = 484.0
+margin_right = 584.0
 margin_bottom = 150.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -624,7 +646,7 @@ __meta__ = {
 }
 
 [node name="vbox" type="VBoxContainer" parent="createPolygonPop/vbox/hbox"]
-margin_right = 232.0
+margin_right = 188.0
 margin_bottom = 150.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -633,11 +655,11 @@ __meta__ = {
 }
 
 [node name="PosHbox" type="HBoxContainer" parent="createPolygonPop/vbox/hbox/vbox"]
-margin_right = 232.0
+margin_right = 188.0
 margin_bottom = 52.0
 
 [node name="Label" type="Label" parent="createPolygonPop/vbox/hbox/vbox/PosHbox"]
-margin_right = 114.0
+margin_right = 92.0
 margin_bottom = 24.0
 rect_min_size = Vector2( 0, 24 )
 size_flags_horizontal = 3
@@ -646,17 +668,17 @@ text = "Position"
 valign = 1
 
 [node name="posVbox" parent="createPolygonPop/vbox/hbox/vbox/PosHbox" instance=ExtResource( 2 )]
-margin_left = 118.0
-margin_right = 232.0
+margin_left = 96.0
+margin_right = 188.0
 margin_bottom = 52.0
 
 [node name="vertexCountHbox" type="HBoxContainer" parent="createPolygonPop/vbox/hbox/vbox"]
 margin_top = 56.0
-margin_right = 232.0
+margin_right = 188.0
 margin_bottom = 80.0
 
 [node name="Label" type="Label" parent="createPolygonPop/vbox/hbox/vbox/vertexCountHbox"]
-margin_right = 114.0
+margin_right = 92.0
 margin_bottom = 24.0
 rect_min_size = Vector2( 0, 24 )
 size_flags_horizontal = 3
@@ -665,8 +687,8 @@ text = "Vertex Count"
 valign = 1
 
 [node name="SpinBox" type="SpinBox" parent="createPolygonPop/vbox/hbox/vbox/vertexCountHbox"]
-margin_left = 118.0
-margin_right = 232.0
+margin_left = 96.0
+margin_right = 188.0
 margin_bottom = 24.0
 rect_min_size = Vector2( 0, 24 )
 size_flags_horizontal = 3
@@ -677,11 +699,11 @@ allow_greater = true
 
 [node name="radiusHbox" type="HBoxContainer" parent="createPolygonPop/vbox/hbox/vbox"]
 margin_top = 84.0
-margin_right = 232.0
+margin_right = 188.0
 margin_bottom = 108.0
 
 [node name="Label" type="Label" parent="createPolygonPop/vbox/hbox/vbox/radiusHbox"]
-margin_right = 114.0
+margin_right = 92.0
 margin_bottom = 24.0
 rect_min_size = Vector2( 0, 24 )
 size_flags_horizontal = 3
@@ -690,8 +712,8 @@ text = "Radius"
 valign = 1
 
 [node name="SpinBox" type="SpinBox" parent="createPolygonPop/vbox/hbox/vbox/radiusHbox"]
-margin_left = 118.0
-margin_right = 232.0
+margin_left = 96.0
+margin_right = 188.0
 margin_bottom = 24.0
 rect_min_size = Vector2( 0, 24 )
 size_flags_horizontal = 3
@@ -702,15 +724,16 @@ value = 10.0
 allow_greater = true
 
 [node name="vbox2" type="VBoxContainer" parent="createPolygonPop/vbox/hbox"]
-margin_left = 252.0
-margin_right = 484.0
+margin_left = 208.0
+margin_right = 584.0
 margin_bottom = 150.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
+size_flags_stretch_ratio = 2.0
 custom_constants/separation = 4
 
 [node name="normalTypeHbox" type="HBoxContainer" parent="createPolygonPop/vbox/hbox/vbox2"]
-margin_right = 232.0
+margin_right = 376.0
 margin_bottom = 24.0
 
 [node name="Label" type="Label" parent="createPolygonPop/vbox/hbox/vbox2/normalTypeHbox"]
@@ -723,7 +746,7 @@ valign = 1
 
 [node name="OptBtn" type="OptionButton" parent="createPolygonPop/vbox/hbox/vbox2/normalTypeHbox"]
 margin_left = 85.0
-margin_right = 232.0
+margin_right = 376.0
 margin_bottom = 24.0
 rect_min_size = Vector2( 0, 24 )
 size_flags_horizontal = 3
@@ -733,7 +756,7 @@ selected = 0
 
 [node name="normalHbox" type="HBoxContainer" parent="createPolygonPop/vbox/hbox/vbox2"]
 margin_top = 28.0
-margin_right = 232.0
+margin_right = 376.0
 margin_bottom = 150.0
 size_flags_vertical = 3
 
@@ -791,7 +814,7 @@ size_flags_vertical = 8
 
 [node name="templatePanel" type="Panel" parent="createPolygonPop/vbox/hbox/vbox2/normalHbox"]
 margin_left = 80.0
-margin_right = 232.0
+margin_right = 376.0
 margin_bottom = 122.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -807,7 +830,7 @@ __meta__ = {
 
 [node name="GridContainer" type="GridContainer" parent="createPolygonPop/vbox/hbox/vbox2/normalHbox/templatePanel/ScrollContainer"]
 custom_constants/hseparation = 1
-columns = 4
+columns = 8
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -916,10 +939,373 @@ rounded = true
 suffix = "px"
 
 [node name="CreateBtn" type="Button" parent="createPolygonPop/vbox"]
-margin_left = 212.0
+margin_left = 262.0
 margin_top = 170.0
-margin_right = 272.0
+margin_right = 322.0
 margin_bottom = 194.0
+rect_min_size = Vector2( 60, 24 )
+size_flags_horizontal = 4
+text = "Create"
+
+[node name="createRectPop" type="WindowDialog" parent="."]
+margin_left = 182.0
+margin_top = 198.0
+margin_right = 782.0
+margin_bottom = 478.0
+rect_min_size = Vector2( 600, 280 )
+popup_exclusive = true
+window_title = "Create Rect"
+script = ExtResource( 29 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="vbox" type="VBoxContainer" parent="createRectPop"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 8.0
+margin_top = 8.0
+margin_right = -8.0
+margin_bottom = -8.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_constants/separation = 20
+__meta__ = {
+"_edit_use_anchors_": false,
+"_editor_description_": ""
+}
+
+[node name="hbox" type="HBoxContainer" parent="createRectPop/vbox"]
+margin_right = 584.0
+margin_bottom = 220.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+custom_constants/separation = 20
+__meta__ = {
+"_edit_use_anchors_": false,
+"_editor_description_": ""
+}
+
+[node name="vbox" type="VBoxContainer" parent="createRectPop/vbox/hbox"]
+margin_right = 188.0
+margin_bottom = 220.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="PosHbox" type="HBoxContainer" parent="createRectPop/vbox/hbox/vbox"]
+margin_right = 188.0
+margin_bottom = 52.0
+
+[node name="Label" type="Label" parent="createRectPop/vbox/hbox/vbox/PosHbox"]
+margin_right = 92.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 0, 24 )
+size_flags_horizontal = 3
+size_flags_vertical = 0
+text = "Position"
+valign = 1
+
+[node name="posVbox" parent="createRectPop/vbox/hbox/vbox/PosHbox" instance=ExtResource( 2 )]
+margin_left = 96.0
+margin_right = 188.0
+margin_bottom = 52.0
+
+[node name="sizeHbox" type="HBoxContainer" parent="createRectPop/vbox/hbox/vbox"]
+margin_top = 56.0
+margin_right = 188.0
+margin_bottom = 108.0
+
+[node name="Label" type="Label" parent="createRectPop/vbox/hbox/vbox/sizeHbox"]
+margin_right = 92.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 0, 24 )
+size_flags_horizontal = 3
+size_flags_vertical = 0
+text = "Size"
+valign = 1
+
+[node name="sizeVbox" parent="createRectPop/vbox/hbox/vbox/sizeHbox" instance=ExtResource( 2 )]
+margin_left = 96.0
+margin_right = 188.0
+margin_bottom = 52.0
+
+[node name="rotHbox" type="HBoxContainer" parent="createRectPop/vbox/hbox/vbox"]
+margin_top = 112.0
+margin_right = 188.0
+margin_bottom = 192.0
+
+[node name="hbox" type="HBoxContainer" parent="createRectPop/vbox/hbox/vbox/rotHbox"]
+margin_right = 92.0
+margin_bottom = 80.0
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="createRectPop/vbox/hbox/vbox/rotHbox/hbox"]
+margin_right = 64.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 0, 24 )
+size_flags_horizontal = 3
+size_flags_vertical = 0
+text = "rotation"
+valign = 1
+
+[node name="rotModifyBtn" type="Control" parent="createRectPop/vbox/hbox/vbox/rotHbox/hbox"]
+margin_left = 68.0
+margin_right = 92.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 24, 24 )
+size_flags_horizontal = 4
+size_flags_vertical = 0
+script = ExtResource( 16 )
+
+[node name="rotDraw" type="Control" parent="createRectPop/vbox/hbox/vbox/rotHbox/hbox/rotModifyBtn"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource( 8 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+arrow_len = 8.0
+
+[node name="whiteRect" type="ColorRect" parent="createRectPop/vbox/hbox/vbox/rotHbox/hbox/rotModifyBtn"]
+visible = false
+self_modulate = Color( 1, 1, 1, 0.196078 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="rotVbox" parent="createRectPop/vbox/hbox/vbox/rotHbox" instance=ExtResource( 5 )]
+margin_left = 96.0
+margin_right = 188.0
+size_flags_horizontal = 3
+size_flags_vertical = 8
+
+[node name="vbox2" type="VBoxContainer" parent="createRectPop/vbox/hbox"]
+margin_left = 208.0
+margin_right = 584.0
+margin_bottom = 220.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 2.0
+custom_constants/separation = 4
+
+[node name="normalTypeHbox" type="HBoxContainer" parent="createRectPop/vbox/hbox/vbox2"]
+margin_right = 376.0
+margin_bottom = 24.0
+
+[node name="Label" type="Label" parent="createRectPop/vbox/hbox/vbox2/normalTypeHbox"]
+margin_right = 81.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 0, 24 )
+size_flags_vertical = 2
+text = "Normal Type"
+valign = 1
+
+[node name="OptBtn" type="OptionButton" parent="createRectPop/vbox/hbox/vbox2/normalTypeHbox"]
+margin_left = 85.0
+margin_right = 376.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 0, 24 )
+size_flags_horizontal = 3
+text = "single normal"
+items = [ "single normal", null, false, 0, null, "auto normal", null, false, 1, null ]
+selected = 0
+
+[node name="normalHbox" type="HBoxContainer" parent="createRectPop/vbox/hbox/vbox2"]
+margin_top = 28.0
+margin_right = 376.0
+margin_bottom = 220.0
+size_flags_vertical = 3
+
+[node name="vbox" type="VBoxContainer" parent="createRectPop/vbox/hbox/vbox2/normalHbox"]
+margin_right = 76.0
+margin_bottom = 192.0
+size_flags_vertical = 3
+
+[node name="hbox" type="HBoxContainer" parent="createRectPop/vbox/hbox/vbox2/normalHbox/vbox"]
+margin_right = 76.0
+margin_bottom = 24.0
+
+[node name="Label" type="Label" parent="createRectPop/vbox/hbox/vbox2/normalHbox/vbox/hbox"]
+margin_right = 48.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 0, 24 )
+size_flags_horizontal = 3
+size_flags_vertical = 2
+text = "Normal"
+valign = 1
+
+[node name="modifyBtn" type="Control" parent="createRectPop/vbox/hbox/vbox2/normalHbox/vbox/hbox"]
+margin_left = 52.0
+margin_right = 76.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 24, 24 )
+size_flags_horizontal = 4
+size_flags_vertical = 4
+script = ExtResource( 16 )
+
+[node name="normalDraw" type="Control" parent="createRectPop/vbox/hbox/vbox2/normalHbox/vbox/hbox/modifyBtn"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource( 8 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+arrow_len = 8.0
+
+[node name="whiteRect" type="ColorRect" parent="createRectPop/vbox/hbox/vbox2/normalHbox/vbox/hbox/modifyBtn"]
+visible = false
+self_modulate = Color( 1, 1, 1, 0.196078 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="normalVbox" parent="createRectPop/vbox/hbox/vbox2/normalHbox/vbox" instance=ExtResource( 5 )]
+margin_top = 28.0
+margin_bottom = 108.0
+size_flags_vertical = 8
+
+[node name="templatePanel" type="Panel" parent="createRectPop/vbox/hbox/vbox2/normalHbox"]
+margin_left = 80.0
+margin_right = 376.0
+margin_bottom = 192.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource( 15 )
+
+[node name="ScrollContainer" type="ScrollContainer" parent="createRectPop/vbox/hbox/vbox2/normalHbox/templatePanel"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+scroll_horizontal_enabled = false
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="GridContainer" type="GridContainer" parent="createRectPop/vbox/hbox/vbox2/normalHbox/templatePanel/ScrollContainer"]
+custom_constants/hseparation = 1
+columns = 8
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="embossHbox" type="HBoxContainer" parent="createRectPop/vbox/hbox/vbox2"]
+visible = false
+margin_top = 28.0
+margin_right = 232.0
+margin_bottom = 52.0
+
+[node name="embossCheckBox" type="CheckBox" parent="createRectPop/vbox/hbox/vbox2/embossHbox"]
+margin_right = 114.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 0, 24 )
+size_flags_horizontal = 3
+pressed = true
+text = "Emboss"
+
+[node name="embossHSlider" type="HSlider" parent="createRectPop/vbox/hbox/vbox2/embossHbox"]
+margin_left = 118.0
+margin_right = 232.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 0, 24 )
+size_flags_horizontal = 3
+min_value = 0.1
+max_value = 2.0
+step = 0.01
+value = 0.1
+ticks_on_borders = true
+
+[node name="bumpHeightHbox" type="HBoxContainer" parent="createRectPop/vbox/hbox/vbox2"]
+visible = false
+margin_top = 28.0
+margin_right = 232.0
+margin_bottom = 52.0
+
+[node name="bumpCheckBox" type="CheckBox" parent="createRectPop/vbox/hbox/vbox2/bumpHeightHbox"]
+margin_right = 114.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 0, 24 )
+size_flags_horizontal = 3
+pressed = true
+text = "Bump"
+
+[node name="bumpHeightHSlider" type="HSlider" parent="createRectPop/vbox/hbox/vbox2/bumpHeightHbox"]
+margin_left = 118.0
+margin_right = 232.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 0, 24 )
+size_flags_horizontal = 3
+min_value = 0.1
+max_value = 2.0
+step = 0.01
+value = 0.3
+ticks_on_borders = true
+
+[node name="blurHbox" type="HBoxContainer" parent="createRectPop/vbox/hbox/vbox2"]
+visible = false
+margin_top = 28.0
+margin_right = 232.0
+margin_bottom = 52.0
+
+[node name="Label" type="Label" parent="createRectPop/vbox/hbox/vbox2/blurHbox"]
+margin_right = 114.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 0, 24 )
+size_flags_horizontal = 3
+size_flags_vertical = 2
+text = "Blur"
+valign = 1
+
+[node name="SpinBox" type="SpinBox" parent="createRectPop/vbox/hbox/vbox2/blurHbox"]
+margin_left = 118.0
+margin_right = 232.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 0, 24 )
+size_flags_horizontal = 3
+max_value = 10.0
+value = 5.0
+rounded = true
+suffix = "px"
+
+[node name="bumpHbox" type="HBoxContainer" parent="createRectPop/vbox/hbox/vbox2"]
+visible = false
+margin_top = 28.0
+margin_right = 232.0
+margin_bottom = 52.0
+
+[node name="Label" type="Label" parent="createRectPop/vbox/hbox/vbox2/bumpHbox"]
+margin_right = 114.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 0, 24 )
+size_flags_horizontal = 3
+size_flags_vertical = 2
+text = "Bump"
+valign = 1
+
+[node name="SpinBox" type="SpinBox" parent="createRectPop/vbox/hbox/vbox2/bumpHbox"]
+margin_left = 118.0
+margin_right = 232.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 0, 24 )
+size_flags_horizontal = 3
+value = 60.0
+rounded = true
+suffix = "px"
+
+[node name="CreateBtn" type="Button" parent="createRectPop/vbox"]
+margin_left = 262.0
+margin_top = 240.0
+margin_right = 322.0
+margin_bottom = 264.0
 rect_min_size = Vector2( 60, 24 )
 size_flags_horizontal = 4
 text = "Create"
@@ -1137,7 +1523,6 @@ __meta__ = {
 [connection signal="mouse_entered" from="vbox/Panel" to="vbox/Panel" method="_on_Panel_mouse_entered"]
 [connection signal="released" from="vbox/Panel/centerCon/bg/img/light" to="." method="_on_light_released"]
 [connection signal="about_to_show" from="createPolygonPop" to="createPolygonPop" method="_on_self_about_to_show"]
-[connection signal="popup_hide" from="createPolygonPop" to="createPolygonPop" method="_on_self_popup_hide"]
 [connection signal="item_selected" from="createPolygonPop/vbox/hbox/vbox2/normalTypeHbox/OptBtn" to="createPolygonPop" method="_on_OptBtn_item_selected"]
 [connection signal="mouse_entered" from="createPolygonPop/vbox/hbox/vbox2/normalHbox/vbox/hbox/modifyBtn" to="createPolygonPop/vbox/hbox/vbox2/normalHbox/vbox/hbox/modifyBtn" method="_on_self_mouse_entered"]
 [connection signal="mouse_exited" from="createPolygonPop/vbox/hbox/vbox2/normalHbox/vbox/hbox/modifyBtn" to="createPolygonPop/vbox/hbox/vbox2/normalHbox/vbox/hbox/modifyBtn" method="_on_self_mouse_exited"]
@@ -1146,6 +1531,19 @@ __meta__ = {
 [connection signal="select_quat" from="createPolygonPop/vbox/hbox/vbox2/normalHbox/templatePanel" to="createPolygonPop" method="_on_templatePanel_select_quat"]
 [connection signal="resized" from="createPolygonPop/vbox/hbox/vbox2/normalHbox/templatePanel/ScrollContainer" to="createPolygonPop/vbox/hbox/vbox2/normalHbox/templatePanel" method="_on_ScrollContainer_resized"]
 [connection signal="pressed" from="createPolygonPop/vbox/CreateBtn" to="." method="_on_createPolygonPop_CreateBtn_pressed"]
+[connection signal="about_to_show" from="createRectPop" to="createRectPop" method="_on_self_about_to_show"]
+[connection signal="mouse_entered" from="createRectPop/vbox/hbox/vbox/rotHbox/hbox/rotModifyBtn" to="createRectPop/vbox/hbox/vbox/rotHbox/hbox/rotModifyBtn" method="_on_self_mouse_entered"]
+[connection signal="mouse_exited" from="createRectPop/vbox/hbox/vbox/rotHbox/hbox/rotModifyBtn" to="createRectPop/vbox/hbox/vbox/rotHbox/hbox/rotModifyBtn" method="_on_self_mouse_exited"]
+[connection signal="pressed" from="createRectPop/vbox/hbox/vbox/rotHbox/hbox/rotModifyBtn" to="createRectPop" method="_on_rotModifyBtn_pressed"]
+[connection signal="value_changed" from="createRectPop/vbox/hbox/vbox/rotHbox/rotVbox" to="createRectPop" method="_on_rotVbox_value_changed"]
+[connection signal="item_selected" from="createRectPop/vbox/hbox/vbox2/normalTypeHbox/OptBtn" to="createRectPop" method="_on_OptBtn_item_selected"]
+[connection signal="mouse_entered" from="createRectPop/vbox/hbox/vbox2/normalHbox/vbox/hbox/modifyBtn" to="createRectPop/vbox/hbox/vbox2/normalHbox/vbox/hbox/modifyBtn" method="_on_self_mouse_entered"]
+[connection signal="mouse_exited" from="createRectPop/vbox/hbox/vbox2/normalHbox/vbox/hbox/modifyBtn" to="createRectPop/vbox/hbox/vbox2/normalHbox/vbox/hbox/modifyBtn" method="_on_self_mouse_exited"]
+[connection signal="pressed" from="createRectPop/vbox/hbox/vbox2/normalHbox/vbox/hbox/modifyBtn" to="createRectPop" method="_on_modifyBtn_pressed"]
+[connection signal="value_changed" from="createRectPop/vbox/hbox/vbox2/normalHbox/vbox/normalVbox" to="createRectPop" method="_on_normalVbox_value_changed"]
+[connection signal="select_quat" from="createRectPop/vbox/hbox/vbox2/normalHbox/templatePanel" to="createRectPop" method="_on_templatePanel_select_quat"]
+[connection signal="resized" from="createRectPop/vbox/hbox/vbox2/normalHbox/templatePanel/ScrollContainer" to="createRectPop/vbox/hbox/vbox2/normalHbox/templatePanel" method="_on_ScrollContainer_resized"]
+[connection signal="pressed" from="createRectPop/vbox/CreateBtn" to="." method="_on_createRectPop_CreateBtn_pressed"]
 [connection signal="about_to_show" from="editNormalPop" to="editNormalPop" method="_on_self_about_to_show"]
 [connection signal="value_changed" from="editNormalPop/vbox/hbox/leftVbox/vector3Vbox" to="editNormalPop" method="_on_vector3Vbox_value_changed"]
 [connection signal="pressed" from="editNormalPop/vbox/hbox/rightVbox/localRotateBtn" to="editNormalPop" method="_on_localRotateBtn_pressed"]

@@ -9,6 +9,7 @@ enum { NT_SINGLE, NT_AUTO }
 var type
 var data				# NT_SINGLE时是法線方向, NT_AUTO是数組 格式 = [ emboss_height, bump_height, blur, bump, with_distance, with_emboss ]
 var sourceTex			# 原來的图片
+var pos := Vector2.ZERO
 
 func _init():
 	type = NT_SINGLE
@@ -17,6 +18,11 @@ func _init():
 
 func _ready():
 	update()
+
+func set_pos(p_pos):
+	for i in polygon.size():
+		polygon[i] += p_pos - pos
+	pos = p_pos
 
 func update():
 	if not is_inside_tree():
@@ -66,18 +72,23 @@ func set_normal_data(p_type, p_data):
 	
 	update()
 
+func set_points(p_points):
+	polygon = p_points
+	for i in polygon.size():
+		polygon[i] += pos
+
 func insert_point(p_id:int, p_pos:Vector2):
 	if p_id < 0 || p_id > polygon.size():
 		return
 	
-	polygon.insert(p_id, p_pos)
+	polygon.insert(p_id, p_pos + pos)
 
 
 func move_point(p_id:int, p_to:Vector2):
 	if p_id < 0 || p_id > polygon.size():
 		return
 	
-	polygon[p_id] = p_to
+	polygon[p_id] = p_to + pos
 
 func delete_point(p_id:int):
 	if p_id < 0 || p_id > polygon.size():

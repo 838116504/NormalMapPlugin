@@ -13,30 +13,43 @@ var originalId = -1
 var hasInsertIcon := false
 var mouseIn := false
 
-func enter(p_screen):
+func enter(p_screen, exitData = null):
 	owner = p_screen
+	originalPos = null
+	originalId = -1
+	mouseIn = false
 	owner.toolPolygon.material = owner.selectIconMaterial
-	if drawEdgeNode:
-		drawEdgeNode.show()
-	for i in creatingVertexs.size():
-		creatingVertexs[i].show()
+	if exitData != null:
+		unclose_polygon(exitData[0])
+		if exitData.size() > 1:
+			select_vertex_by_id(exitData[1])
 	owner.view.connect("mouse_entered", self, "on_view_mouse_entered")
 	owner.view.connect("mouse_exited", self, "on_view_mouse_exited")
 	owner.unselect()
 
 func exit():
 	owner.toolPolygon.material = owner.iconMaterial
-	if owner.selectedMode == self && owner.selectedItemId < 0 && owner.selectedHandlerId >= 0:
+	clear_creating()
+
+	if is_selected_creating_vertex():
 		get_selected_obj().unselect(owner)
 		owner.set_select(-1, -1, owner.modes[owner.MODE_NONE])
-	if drawEdgeNode:
-		drawEdgeNode.hide()
-	for i in creatingVertexs.size():
-		creatingVertexs[i].hide()
+	
 	if owner.view.is_connected("mouse_entered", self, "on_view_mouse_entered"):
 		owner.view.disconnect("mouse_entered", self, "on_view_mouse_entered")
 	if owner.view.is_connected("mouse_exited", self, "on_view_mouse_exited"):
 		owner.view.disconnect("mouse_exited", self, "on_view_mouse_exited")
+
+func get_exit_data():
+	if creatingVertexs.size() <= 0:
+		return null
+	var ret = [creatingVertexs.duplicate()]
+	if is_selected_creating_vertex():
+		ret.append(owner.selectedHandlerId)
+	return ret
+
+func is_selected_creating_vertex() -> bool:
+	return owner.selectedMode == self && owner.selectedItemId < 0 && owner.selectedHandlerId >= 0
 
 func on_view_mouse_entered():
 	mouseIn = true
@@ -173,8 +186,6 @@ func input(event):
 		if creatingVertexs.size() == 0 && originalPos != null:
 			if drawEdgeNode == null:
 				create_draw_node()
-	#		VisualServer.canvas_item_clear(drawEdgeNode.get_canvas_item())
-	#		VisualServer.canvas_item_add_circle(drawEdgeNode.get_canvas_item(), originalPos, (owner.sourceImg.get_local_mouse_position() - originalPos).length(), lineColor)
 			redraw()
 		elif creatingVertexs.size() > 1:
 			redraw()
@@ -182,8 +193,8 @@ func input(event):
 		if event.scancode == KEY_DELETE:
 			owner.accept_event()
 			var selectedObj = owner.get_selected_obj()
-			if selectedObj != null && owner.selectedMode == self:
-				if owner.selectedItemId < 0 && owner.selectedHandlerId >= 0:
+			if selectedObj != null:
+				if is_selected_creating_vertex():
 					owner.undoRedo.create_action("Delete Vertex")
 					owner.unselect_do()
 					#owner.undoRedo.add_do_method(owner, "unselect")
@@ -219,19 +230,7 @@ func create_draw_node():
 
 func on_drawEdgeNode_draw():
 	redraw()
-	#print("on_drawEdgeNode_draw")
 
-#func on_drawEdgeNode_focus_entered():
-#	print("on_drawEdgeNode_focus_entered")
-#
-#func on_drawEdgeNode_focus_exited():
-#	print("on_drawEdgeNode_focus_exited")
-#
-#func on_drawEdgeNode_mouse_entered():
-#	print("on_drawEdgeNode_focus_entered")
-#
-#func on_drawEdgeNode_mouse_exited():
-#	print("on_drawEdgeNode_focus_exited")
 
 func on_vertex_pressed(p_vertex):
 	var id = creatingVertexs.find(p_vertex)
@@ -240,8 +239,6 @@ func on_vertex_pressed(p_vertex):
 		return
 	originalPos = creatingVertexs[id].get_pos()
 	originalId = id
-	#print("on_vertex_pressed id: ", str(id))
-
 
 
 func redraw():

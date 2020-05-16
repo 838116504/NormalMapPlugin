@@ -23,7 +23,7 @@ func can_drop_data(position, data):
 		return false
 
 	var vboxLocalPos = vbox.get_global_rect().position - get_global_rect().position
-	var y = position.y - vboxLocalPos.y + scrollCon.scroll_vertical
+	#var y = position.y - vboxLocalPos.y + scrollCon.scroll_vertical
 	if position.y < vboxLocalPos.y:
 		scrollCon.scroll_vertical += position.y - vboxLocalPos.y
 	elif position.y > vboxLocalPos.y + vbox.rect_size.y:
@@ -34,12 +34,12 @@ func can_drop_data(position, data):
 func drop_data(position, data):
 	var vboxLocalPos = vbox.get_global_rect().position - get_global_rect().position
 	var y = position.y - vboxLocalPos.y + scrollCon.scroll_vertical
-	var newId = get_child_count() - 1
+	var newId = vbox.get_child_count() - 1
 	if y <= 0:
 		newId = 0
 	else:
-		for i in get_child_count():
-			if y < get_child(i).rect_position.y + get_child(i).rect_size.y:
+		for i in vbox.get_child_count():
+			if y < vbox.get_child(i).rect_position.y + vbox.get_child(i).rect_size.y:
 				newId = i
 				break
 	if newId == data.get_index():
@@ -71,7 +71,7 @@ func drop_data_fw(position, data, from):
 #	mainPanel.on_drag_list_node(data, newId)
 
 func get_drag_data_fw(position, from):
-	print("get_drag_data_fw")
+	#print("get_drag_data_fw")
 	var preview = preload("dragPreview.tscn").instance()
 	preview.get_node("Label").text = from.get_node("nameLabel").text
 	set_drag_preview(preview)
@@ -79,3 +79,4 @@ func get_drag_data_fw(position, from):
 
 func _on_exportBtn_pressed():
 	mainPanel.export_normal_map()
+

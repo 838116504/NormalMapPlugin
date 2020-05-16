@@ -39,3 +39,7 @@ func _on_Panel_mouse_entered():
 #
 #func _on_img_mouse_exited():
 #	print("Img mouse out!")
+
+
+func _on_centerCon_resized():
+	$centerCon.rect_pivot_offset = $centerCon.rect_size / 2

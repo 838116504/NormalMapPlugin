@@ -18,9 +18,8 @@ func _enter_tree():
 	mainPanel.theme = get_editor_interface().get_base_control().theme
 	get_editor_interface().get_editor_viewport().add_child(mainPanel)
 	mainPanel.editorFileSystem = get_editor_interface().get_resource_filesystem()
-	update_theme()
-
-	#get_editor_interface().get_editor_settings().connect("settings_changed", self, "on_editor_settings_changed")
+	themeName == get_editor_interface().get_editor_settings().get_setting("interface/theme/preset")
+	get_editor_interface().get_editor_settings().connect("settings_changed", self, "on_editor_settings_changed")
 #	queue_save_layout()
 	#make_visible(false)
 
@@ -140,11 +139,13 @@ func update_plugin_icon():
 func _notification(what):
 	match what:
 		Control.NOTIFICATION_THEME_CHANGED:
+			yield(get_tree().create_timer(2.0), "timeout")
+			yield(get_tree(), "idle_frame")
 			update_plugin_icon()
-			update_theme()
-
-#func on_editor_settings_changed():
-#	update_theme()
+			mainPanel.theme = get_editor_interface().get_base_control().theme
+			#mainPanel._notification(Control.NOTIFICATION_THEME_CHANGED)
+			#layerDock._notification(Control.NOTIFICATION_THEME_CHANGED)
+			layerDock.theme = get_editor_interface().get_base_control().theme
 
 
 func get_window_layout(layout:ConfigFile):
@@ -210,14 +211,10 @@ func create_layer_dock():
 	#layerDock.visible = false
 	add_control_to_dock(DOCK_SLOT_LEFT_BR, layerDock)
 
-func update_theme():
+func on_editor_settings_changed():
 	if themeName == get_editor_interface().get_editor_settings().get_setting("interface/theme/preset"):
 		return
 	themeName = get_editor_interface().get_editor_settings().get_setting("interface/theme/preset")
-	match themeName:
-		_:
-			set_icon_color(get_editor_interface().get_base_control().get_color("font_color", "LineEdit"), Color(35.0/255.0, 107.0/255.0, 230.0/255.0))
-
-func set_icon_color(forward:Color, select:Color):
-	mainPanel.iconMaterial.set_shader_param("forward", forward)
-	mainPanel.selectIconMaterial.set_shader_param("select", select)
+	
+	_notification(Control.NOTIFICATION_THEME_CHANGED)
+	

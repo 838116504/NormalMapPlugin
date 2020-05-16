@@ -94,7 +94,7 @@ func input(event):
 			var curId = 0
 			var compId
 			while curId < polygons.size():
-				compId = 0
+				compId = curId + 1
 				while compId < polygons.size():
 					if compId == curId:
 						compId += 1
@@ -103,23 +103,41 @@ func input(event):
 						if curId > compId:
 							curId -= 1
 						polygons.remove(compId)
+						compId = 0
 					else:
 						compId += 1
 				
 				curId += 1
-
-			# 合并多边形
-			var result = polygons[0]
-			for i in range(1, polygons.size()):
-				result = Geometry.merge_polygons_2d(result, polygons[i])[0]
-			if result.size() < 3:
+			
+			var target = null
+			for i in polygons.size():
+				#print("polygon %s: %s, %s" % [str(i), str(polygons[i][0]), str(polygons[i].back())])
+				if Geometry.is_point_in_polygon(pos, polygons[i]):
+					target = polygons[i]
+					break
+			
+			if target == null:
 				return
+			# 合并多边形
+#			var result = polygons[0]
+#			for i in range(1, polygons.size()):
+#				result = Geometry.merge_polygons_2d(result, polygons[i])[0]
+#			if result.size() < 3:
+#				return
 			originalPos = null
-			owner.createPolygonPop.set_points(result)
+			owner.createPolygonPop.set_points(target)
+			owner.createPolygonPop.popup_centered()
 #			for i in polygons.size():
 #				owner.createPolygonPop.set_points(polygons[i])
 #				owner._on_createPolygonPop_CreateBtn_pressed()
-			owner.createPolygonPop.popup_centered()
+			
+
+func get_polygon_area(p_points) -> float:
+	var area:float = 0.0
+	for i in p_points.size() - 1:
+		area += p_points[i].cross(p_points[i + 1])
+	area += p_points.back().cross(p_points[0])
+	return 0.5 * abs(area)
 
 func get_color_difference(p_a:Color, p_b:Color) -> int:
 	return int(abs(p_a.r8 - p_b.r8) + abs(p_a.g8 - p_b.g8) + abs(p_a.b8 - p_b.b8))
@@ -127,12 +145,20 @@ func get_color_difference(p_a:Color, p_b:Color) -> int:
 func mix_polygon(p_a:Array, p_b:Array) -> bool:
 	var ret := false
 	if p_a.front() == p_b.front():
+		if p_a.back() == p_b.back():
+			p_b.pop_back()
+			if (p_a.back() - p_b.back()).normalized() == (p_a[p_a.size() - 2] - p_a.back()).normalized():
+				p_a.pop_back()
 		p_a.invert()
 		ret = true
 	elif p_a.back() == p_b.back():
 		p_b.invert()
 		ret = true
 	elif p_a.front() == p_b.back():
+		if p_a.back() == p_b.front():
+			p_b.pop_front()
+			if (p_a.back() - p_b.front()).normalized() == (p_a[p_a.size() - 2] - p_a.back()).normalized():
+				p_a.pop_back()
 		p_a.invert()
 		p_b.invert()
 		ret = true
@@ -145,7 +171,7 @@ func mix_polygon(p_a:Array, p_b:Array) -> bool:
 	p_b.pop_front()
 	if p_b.size() > 1 && (p_a.back() - p_b.front()).normalized() == (p_b.front() - p_b[1]).normalized():
 		p_b.pop_front()
-	if (p_b.front() - p_a.back()).normalized() == (p_a.back() - p_a[p_a.size() - 2]).normalized():
+	if p_a.size() > 1 && p_b.size() > 0 && (p_b.front() - p_a.back()).normalized() == (p_a.back() - p_a[p_a.size() - 2]).normalized():
 		p_a.pop_back()
 	for i in p_b.size():
 		p_a.push_back(p_b[i])

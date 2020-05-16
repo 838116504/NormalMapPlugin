@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=2]
+[gd_scene load_steps=40 format=2]
 
 [ext_resource path="res://addons/NormalMapEditor/Panel.gd" type="Script" id=1]
 [ext_resource path="res://addons/NormalMapEditor/vector2Vbox.tscn" type="PackedScene" id=2]
@@ -29,8 +29,11 @@
 [ext_resource path="res://addons/NormalMapEditor/PopupPanel.gd" type="Script" id=27]
 [ext_resource path="res://addons/NormalMapEditor/limitFloatEdit.gd" type="Script" id=28]
 [ext_resource path="res://addons/NormalMapEditor/createRectPop.gd" type="Script" id=29]
+[ext_resource path="res://addons/NormalMapEditor/iconBtn.gd" type="Script" id=30]
+[ext_resource path="res://addons/NormalMapEditor/hoverShader.shader" type="Shader" id=31]
+[ext_resource path="res://addons/NormalMapEditor/scaleLabel.gd" type="Script" id=32]
 
-[sub_resource type="Image" id=7]
+[sub_resource type="Image" id=8]
 data = {
 "data": PoolByteArray( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ),
 "format": "LumAlpha8",
@@ -42,10 +45,10 @@ data = {
 [sub_resource type="ImageTexture" id=2]
 flags = 4
 flags = 4
-image = SubResource( 7 )
+image = SubResource( 8 )
 size = Vector2( 16, 16 )
 
-[sub_resource type="Shader" id=4]
+[sub_resource type="Shader" id=3]
 code = "shader_type canvas_item;
 
 uniform bool normal_preview = false;
@@ -74,12 +77,20 @@ void light(){
 	}
 }"
 
-[sub_resource type="ViewportTexture" id=8]
+[sub_resource type="ViewportTexture" id=9]
+
+[sub_resource type="ShaderMaterial" id=5]
+shader = SubResource( 3 )
+shader_param/normal_preview = true
+shader_param/normal_texture = SubResource( 9 )
 
 [sub_resource type="ShaderMaterial" id=6]
-shader = SubResource( 4 )
-shader_param/normal_preview = false
-shader_param/normal_texture = SubResource( 8 )
+shader = ExtResource( 31 )
+shader_param/isHover = false
+
+[sub_resource type="ShaderMaterial" id=7]
+shader = ExtResource( 31 )
+shader_param/isHover = false
 
 [node name="mainPanel" type="Control"]
 anchor_right = 1.0
@@ -545,6 +556,7 @@ __meta__ = {
 [node name="centerCon" type="CenterContainer" parent="vbox/Panel"]
 anchor_right = 1.0
 anchor_bottom = 1.0
+rect_pivot_offset = Vector2( 512, 284 )
 mouse_filter = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -564,7 +576,7 @@ stretch_mode = 2
 
 [node name="img" type="TextureRect" parent="vbox/Panel/centerCon/bg"]
 light_mask = 2
-material = SubResource( 6 )
+material = SubResource( 5 )
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
@@ -595,6 +607,52 @@ scale = Vector2( 2, 2 )
 texture = ExtResource( 21 )
 range_height = 20.0
 range_item_cull_mask = 2
+
+[node name="hbox" type="HBoxContainer" parent="vbox/Panel"]
+margin_left = 10.0
+margin_top = 10.0
+margin_right = 110.0
+margin_bottom = 34.0
+rect_min_size = Vector2( 100, 24 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="zoomLessBtn" type="TextureRect" parent="vbox/Panel/hbox"]
+material = SubResource( 6 )
+margin_top = 4.0
+margin_right = 16.0
+margin_bottom = 20.0
+size_flags_vertical = 4
+texture = SubResource( 2 )
+stretch_mode = 4
+script = ExtResource( 30 )
+iconName = "ZoomLess"
+
+[node name="scaleLabel" type="Label" parent="vbox/Panel/hbox"]
+margin_left = 20.0
+margin_top = 5.0
+margin_right = 80.0
+margin_bottom = 19.0
+mouse_filter = 0
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 2.0
+text = "100%"
+align = 1
+clip_text = true
+script = ExtResource( 32 )
+
+[node name="zoomMoreBtn" type="TextureRect" parent="vbox/Panel/hbox"]
+material = SubResource( 7 )
+margin_left = 84.0
+margin_top = 4.0
+margin_right = 100.0
+margin_bottom = 20.0
+size_flags_vertical = 4
+texture = SubResource( 2 )
+stretch_mode = 4
+script = ExtResource( 30 )
+iconName = "ZoomMore"
 
 [node name="askSavePop" type="ConfirmationDialog" parent="."]
 margin_right = 200.0
@@ -1521,7 +1579,11 @@ __meta__ = {
 [connection signal="value_changed" from="vbox/hbox/bumpEdit" to="." method="_on_bumpEdit_value_changed"]
 [connection signal="input" from="vbox/Panel" to="." method="_on_Panel_input"]
 [connection signal="mouse_entered" from="vbox/Panel" to="vbox/Panel" method="_on_Panel_mouse_entered"]
+[connection signal="resized" from="vbox/Panel/centerCon" to="vbox/Panel" method="_on_centerCon_resized"]
 [connection signal="released" from="vbox/Panel/centerCon/bg/img/light" to="." method="_on_light_released"]
+[connection signal="pressed" from="vbox/Panel/hbox/zoomLessBtn" to="." method="_on_zoomLessBtn_pressed"]
+[connection signal="pressed" from="vbox/Panel/hbox/scaleLabel" to="." method="_on_scaleLabel_pressed"]
+[connection signal="pressed" from="vbox/Panel/hbox/zoomMoreBtn" to="." method="_on_zoomMoreBtn_pressed"]
 [connection signal="about_to_show" from="createPolygonPop" to="createPolygonPop" method="_on_self_about_to_show"]
 [connection signal="item_selected" from="createPolygonPop/vbox/hbox/vbox2/normalTypeHbox/OptBtn" to="createPolygonPop" method="_on_OptBtn_item_selected"]
 [connection signal="mouse_entered" from="createPolygonPop/vbox/hbox/vbox2/normalHbox/vbox/hbox/modifyBtn" to="createPolygonPop/vbox/hbox/vbox2/normalHbox/vbox/hbox/modifyBtn" method="_on_self_mouse_entered"]

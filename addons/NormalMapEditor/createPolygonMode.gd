@@ -1,7 +1,7 @@
 tool
 extends Reference
 
-const VertexHandler = preload("res://addons/NormalMapEditor/vertexHandler.tscn")
+const VertexHandler = preload("vertexHandler.tscn")
 const lineColor := Color(35.0/255.0, 107.0/255.0, 230.0/255.0)
 const hoverColor := Color(65.0/255.0, 65.0/255.0, 65.0/255.0)
 
@@ -20,20 +20,22 @@ func enter(p_screen, exitData = null):
 	mouseIn = false
 	owner.toolPolygon.material = owner.selectIconMaterial
 	if exitData != null:
+		print("exitData: ", str(exitData))
 		unclose_polygon(exitData[0])
 		if exitData.size() > 1:
 			select_vertex_by_id(exitData[1])
-	owner.view.connect("mouse_entered", self, "on_view_mouse_entered")
-	owner.view.connect("mouse_exited", self, "on_view_mouse_exited")
+	if not owner.view.is_connected("mouse_entered", self, "on_view_mouse_entered"):
+		owner.view.connect("mouse_entered", self, "on_view_mouse_entered")
+	if not owner.view.is_connected("mouse_exited", self, "on_view_mouse_exited"):
+		owner.view.connect("mouse_exited", self, "on_view_mouse_exited")
 	owner.unselect()
 
 func exit():
 	owner.toolPolygon.material = owner.iconMaterial
-	clear_creating()
-
 	if is_selected_creating_vertex():
-		get_selected_obj().unselect(owner)
 		owner.set_select(-1, -1, owner.modes[owner.MODE_NONE])
+	
+	clear_creating()
 	
 	if owner.view.is_connected("mouse_entered", self, "on_view_mouse_entered"):
 		owner.view.disconnect("mouse_entered", self, "on_view_mouse_entered")
@@ -43,13 +45,18 @@ func exit():
 func get_exit_data():
 	if creatingVertexs.size() <= 0:
 		return null
-	var ret = [creatingVertexs.duplicate()]
+	
+	var points = PoolVector2Array()
+	points.resize(creatingVertexs.size())
+	for i in points.size():
+		points[i] = creatingVertexs[i].get_pos()
+	var ret = [ points ]
 	if is_selected_creating_vertex():
 		ret.append(owner.selectedHandlerId)
 	return ret
 
 func is_selected_creating_vertex() -> bool:
-	return owner.selectedMode == self && owner.selectedItemId < 0 && owner.selectedHandlerId >= 0
+	return owner.selectedMode == self && owner.selectedItemId < 0 && owner.selectedHandlerId >= 0 && owner.selectedHandlerId < creatingVertexs.size()
 
 func on_view_mouse_entered():
 	mouseIn = true
@@ -64,8 +71,9 @@ func clear_creating():
 #	owner.selectedHandlerId = -1
 #	owner.selectedItemId = -1
 #	owner.selectedMode = null
-	drawEdgeNode.queue_free()
-	drawEdgeNode = null
+	if drawEdgeNode != null:
+		drawEdgeNode.queue_free()
+		drawEdgeNode = null
 	for i in creatingVertexs.size():
 		creatingVertexs[i].queue_free()
 	creatingVertexs.resize(0)
@@ -92,7 +100,6 @@ func add_vertex(p_pos):
 
 	#owner.view.grab_focus()
 	#owner.view.grab_click_focus()
-
 
 
 func on_vertex_item_rect_changed():
@@ -122,21 +129,12 @@ func remove_vertex(p_id):
 
 func get_selected_obj():
 	if owner.selectedItemId < 0:
-		if owner.selectedHandlerId < 0:
+		if owner.selectedHandlerId < 0 || owner.selectedHandlerId >= creatingVertexs.size():
 			return null
 		else:
 			return creatingVertexs[owner.selectedHandlerId]
 	else:
 		return owner.items[owner.selectedItemId]
-
-
-#func add_select_undo():
-#	var selectedId = -1
-#	selectedId = creatingVertexs.find(owner.selectedHandler)
-#	if selectedId >= 0:
-#		owner.undoRedo.add_undo_method(self, "select_vertex_by_id", selectedId)
-#	else:
-#		owner.undoRedo.add_undo_method(owner, "select_handler", owner.selectedHandler)
 
 func input(event):
 	if event is InputEventMouseButton && event.button_index == BUTTON_LEFT:
@@ -306,7 +304,7 @@ func select_vertex_by_id(p_id):
 		p_id = creatingVertexs.size() - p_id
 	if p_id < 0 || p_id >= creatingVertexs.size(): 
 		p_id = creatingVertexs.size() - 1
-	owner.select(p_id, null, self)
+	owner.select(p_id, -1, self)
 
 func close_polygon(p_points):
 	clear_creating()
@@ -363,7 +361,7 @@ func on_vertex_released(p_vertex):
 			owner.undoRedo.commit_action()
 			print("Drag vertex")
 		else:
-			owner.select(id, null, self)
+			owner.select(id, -1, self)
 
 		
 	originalPos = null

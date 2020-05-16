@@ -9,6 +9,8 @@ const CreatePolygonMode = preload("createPolygonMode.gd")
 const CreateRectMode = preload("createRectMode.gd")
 const MagicMode = preload("magicMode.gd")
 const SelectMode = preload("selectMode.gd")
+const ZOOM_SCALE_FACTOR := sqrt(2.0)
+const MIN_ZOOM_SCALE := 0.1
 
 # 可視眼︰ GuiVisibilityVisible
 # 隱藏眼︰ GuiVisibilityHidden
@@ -22,6 +24,8 @@ const SelectMode = preload("selectMode.gd")
 # hover圓形拖拽︰ GuiSliderGrabberHl
 # 加頂点︰ EditorHandleAdd
 # 下拉按鈕︰ GuiDropdown， GuiOptionArrow
+# Zoom放大︰ ZoomMore
+# Zoom縮小︰ ZoomLess
 
 
 const CONFIG_FILENAME = "config.cfg"
@@ -43,13 +47,16 @@ var selectIconMaterial:ShaderMaterial
 var version := 0
 var showNormal := false
 var undoRedo := UndoRedo.new()
+var viewScale := 1.0
 
 onready var renderNodeParent = $resultView
 onready var showNodeParent = $vbox/Panel/centerCon/bg/img
 onready var view = $vbox/Panel
+onready var viewChild = $vbox/Panel/centerCon
 onready var resultView = $resultView
 onready var sourceBg = $vbox/Panel/centerCon/bg
 onready var sourceImg = $vbox/Panel/centerCon/bg/img
+onready var viewScaleLabel = $vbox/Panel/hbox/scaleLabel
 onready var askSavePop = $askSavePop
 onready var createPolygonPop = $createPolygonPop
 onready var createRectPop = $createRectPop
@@ -709,8 +716,8 @@ class PolygonItem:
 		set_visible(configFile.get_value(section, "visible", true))
 
 func _init():
-	iconMaterial = preload("res://addons/NormalMapEditor/iconMaterial.tres")
-	selectIconMaterial = preload("res://addons/NormalMapEditor/selectIconMaterial.tres")
+	iconMaterial = preload("iconMaterial.tres")
+	selectIconMaterial = preload("selectIconMaterial.tres")
 	version = undoRedo.get_version()
 	modes = [ dummy.new(), CreatePolygonMode.new(), CreateRectMode.new(), MagicMode.new(), SelectMode.new() ]
 	mode = modes[MODE_NONE]
@@ -722,6 +729,15 @@ func _ready():
 	sourceImg.material.set_shader_param("normal_preview", false)
 	handlers.push_back(light)
 	lightId = handlers.size() - 1
+
+func _notification(what):
+	match what:
+		NOTIFICATION_ENTER_TREE, NOTIFICATION_THEME_CHANGED:
+			set_icon_color(get_color("font_color", "LineEdit"), Color8(35, 107, 230))
+
+func set_icon_color(forward:Color, select:Color):
+	iconMaterial.set_shader_param("forward", forward)
+	selectIconMaterial.set_shader_param("select", select)
 
 # 設置要生成的法線图的紋理路徑
 func on_set_project(path:String):
@@ -994,8 +1010,10 @@ func on_drag_list_node(p_listNode, p_newId):
 	for i in items.size():
 		if items[i].data.is_own(p_listNode):
 			undoRedo.create_action("Drag list item")
+			unselect_do()
 			undoRedo.add_do_method(self, "set_item_id", i, p_newId)
 			undoRedo.add_undo_method(self, "set_item_id", p_newId, i)
+			unselect_undo()
 			undoRedo.commit_action()
 			print("Drag list item")
 			return
@@ -1174,6 +1192,11 @@ func _on_Panel_input(event):
 					undoRedo.undo()
 					print("Undo")
 			return
+		elif event.scancode == KEY_Z && !event.control && !event.shift && !event.alt:
+			accept_event()
+			if !event.pressed || event.echo:
+				return
+			_on_showToggle_pressed()
 		elif event.scancode == KEY_L && !event.control && !event.shift && !event.alt:
 			accept_event()
 			if !event.pressed || event.echo:
@@ -1189,6 +1212,97 @@ func _on_Panel_input(event):
 					return
 				delete_selected_item()
 				return
+		elif (event.scancode == KEY_0 || event.scancode == KEY_KP_0) && event.control && !event.shift && !event.alt:
+			accept_event()
+			if !event.pressed || event.echo:
+				return
+			set_view_scale(1.0)
+			return
+		elif event.scancode == KEY_KP_ADD && event.control && !event.shift && !event.alt:
+			accept_event()
+			if !event.pressed || event.echo:
+				return
+			_on_zoomMoreBtn_pressed()
+			return
+		elif event.scancode == KEY_KP_SUBTRACT && event.control && !event.shift && !event.alt:
+			accept_event()
+			if !event.pressed || event.echo:
+				return
+			_on_zoomLessBtn_pressed()
+			return
+		elif event.scancode == KEY_HOME && !event.control && !event.shift && !event.alt:
+			accept_event()
+			if !event.pressed || event.echo:
+				return
+			viewChild.rect_position = Vector2.ZERO
+			return
+		elif (event.scancode == KEY_UP || event.scancode == KEY_DOWN) && !event.control && !event.shift && !event.alt:
+			if mode == modes[MODE_NONE]:
+				accept_event()
+				if !event.pressed || event.echo:
+					return
+#				if selectedMode != modes[MODE_NONE] || selectedItemId < 0 || selectedHandlerId >= 0:
+#					return
+				var add = 1.0
+				if event.scancode == KEY_UP:
+					add = -1.0
+				var obj = get_selected_obj()
+				if toolYEdit.visible:
+					if toolPosDir.visible:
+						_on_yEdit_value_changed(obj.get_dir_pos(toolPosDir.get_dir()).y + add)
+					else:
+						_on_yEdit_value_changed(obj.get_y() + add)
+				return
+		elif (event.scancode == KEY_LEFT || event.scancode == KEY_RIGHT) && !event.control && !event.shift && !event.alt:
+			if mode == modes[MODE_NONE]:
+				accept_event()
+				if !event.pressed || event.echo:
+					return
+#				if selectedMode != modes[MODE_NONE] || selectedItemId < 0 || selectedHandlerId >= 0:
+#					return
+				var add = 1.0
+				if event.scancode == KEY_LEFT:
+					add = -1.0
+				var obj = get_selected_obj()
+				if toolXEdit.visible:
+					if toolPosDir.visible:
+						_on_xEdit_value_changed(obj.get_dir_pos(toolPosDir.get_dir()).x + add)
+					else:
+						_on_xEdit_value_changed(obj.get_x() + add)
+				return
+		elif event.scancode == KEY_Q && !event.control && !event.shift && !event.alt:
+			accept_event()
+			if !event.pressed || event.echo:
+				return
+			to_mode(modes[MODE_SELECT])
+		elif event.scancode == KEY_W && !event.control && !event.shift && !event.alt:
+			accept_event()
+			if !event.pressed || event.echo:
+				return
+			to_mode(modes[MODE_CREATE_RECT])
+		elif event.scancode == KEY_E && !event.control && !event.shift && !event.alt:
+			accept_event()
+			if !event.pressed || event.echo:
+				return
+			to_mode(modes[MODE_CREATE_POLYGON])
+		elif event.scancode == KEY_R && !event.control && !event.shift && !event.alt:
+			accept_event()
+			if !event.pressed || event.echo:
+				return
+			to_mode(modes[MODE_MAGIC])
+
+	elif event is InputEventMouseButton:
+		if event.button_index == BUTTON_WHEEL_UP:
+			accept_event()
+			set_view_scale(viewScale + 0.05 * event.factor)
+			return
+		elif event.button_index == BUTTON_WHEEL_DOWN:
+			accept_event()
+			set_view_scale(viewScale - 0.05 * event.factor)
+			return
+	elif event is InputEventMouseMotion:
+		if Input.is_mouse_button_pressed(BUTTON_MIDDLE):
+			viewChild.rect_position += event.relative
 	
 	if mode != modes[MODE_NONE] && mode.has_method("input"):
 		mode.input(event)
@@ -1811,3 +1925,18 @@ func _on_posDir_dir_changed(newDir):
 	for i in connectData.size():
 		toolYEdit.connect("value_changed", connectData[i]["target"], connectData[i]["method"], connectData[i]["binds"], connectData[i]["flags"])
 
+func set_view_scale(p_value:float):
+	viewScale = max(p_value, MIN_ZOOM_SCALE)
+	viewScaleLabel.text = "%.1f" % (viewScale * 100.0) + "%"
+	viewChild.rect_scale = Vector2(viewScale, viewScale)
+
+func _on_scaleLabel_pressed():
+	set_view_scale(1.0)
+
+
+func _on_zoomLessBtn_pressed():
+	set_view_scale(viewScale / ZOOM_SCALE_FACTOR)
+
+
+func _on_zoomMoreBtn_pressed():
+	set_view_scale(viewScale * ZOOM_SCALE_FACTOR)

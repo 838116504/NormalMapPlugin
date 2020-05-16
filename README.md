@@ -1,11 +1,39 @@
 The auto normal maps generation reference from ([Github link](https://github.com/azagaya/godot_normalMap_generator))
 
-## 功能
+## Usage
 
-打算弄矩形工具，多边形工具和魔朮棒工具，目前只做好多边形工具和其他操作
+Theme toggle
+![](theme_toggle.gif)
 
-## 用法
+Load image
+![](loadImg.gif)
 
-把图片拖到dock上的Texture右边欄位來新建或打开对应項目，在你保存場景时保存當前項目，項目路徑为图片路徑，副档名为.nmp。
+Create rect tool(hot key W)
+![](rectCreate.gif)
 
-打开后自己画範圍，設定範圍內的法線，弄好就点dock下方的export按鈕導出，路徑为图片路徑，图片名字加_n，副档名为png。
+Watch normal(Normal hot key Z, light hot key L)
+![](normalCheck.gif)
+
+View scale and move(Mouse wheel/Ctrl+Add/Ctrl+Subtract to Zoom in/out, drag mouse middle button to move view, Home Key to reset view move, Ctrl+0 to reset view scale)
+![](zoomChange.gif)
+
+Create polygon tool(hot key E)
+![](polygonCreate.gif)
+
+Magic tool(hot key R)
+![](magicUse.gif)
+
+The NormalMap dock
+![](layerDockUse.gif)
+
+Select tool(hot Q)
+![](itemSelect.gif)
+
+Undo redo(Ctrl+Z to undo, Ctrl+Shift+Z to redo)
+![](unodoRedo.gif)
+
+Save project(Ctrl+S)
+![](saveProject.gif)
+
+Export
+![](export.gif)

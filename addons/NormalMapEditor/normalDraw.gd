@@ -2,6 +2,7 @@ tool
 extends Control
 
 signal pressed
+signal drag(press_pos, relative)
 
 const HX := 0.05
 const HY := 1.0/3.0 + 0.05
@@ -10,7 +11,7 @@ const HZ := 2.0/3.0 + 0.05
 export(float) var arrow_len = 16
 
 var quat := Quat(Vector3.ZERO)
-var press := false
+var press = null
 
 
 func _ready():
@@ -19,11 +20,13 @@ func _ready():
 func _gui_input(event):
 	if event is InputEventMouseButton && event.button_index == BUTTON_LEFT:
 		if event.pressed:
-			press = true
+			press = event.position
 		else:
-			if press:
-				press = false
+			if press != null:
+				press = null
 				emit_signal("pressed")
+	elif event is InputEventMouseMotion && press != null:
+		emit_signal("drag", press, event.relative)
 
 func set_normal(p_n:Vector3):
 	if p_n == Vector3(0, 0, 1):

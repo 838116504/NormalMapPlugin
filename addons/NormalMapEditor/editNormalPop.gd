@@ -11,6 +11,7 @@ onready var globalDegEdit = $vbox/hbox/rightVbox/globalHbox/degEdit
 var quat := Quat(Vector3(0, 0, 0))
 enum { NONE, MODIFY, MODIFY_SAVE }
 var choosed := NONE
+var pressQuat = null
 
 func _ready():
 	normalEdit.set_quat(quat)
@@ -85,3 +86,15 @@ func _on_self_about_to_show():
 func _on_modifySaveBtn_pressed():
 	choosed = MODIFY_SAVE
 	hide()
+
+
+func _on_normal_drag(press_pos, relative):
+	if pressQuat == null:
+		pressQuat = get_quat()
+	
+	var d = get_local_mouse_position() - press_pos
+	set_quat(Quat(Vector3(0.0, 1.0, 0.0), d.x / (normalDraw.rect_size.x * 0.6) * PI) * Quat(Vector3(1.0, 0.0, 0.0), -d.y / (normalDraw.rect_size.y * 0.6) * PI) * pressQuat)
+
+
+func _on_normal_pressed():
+	pressQuat = null

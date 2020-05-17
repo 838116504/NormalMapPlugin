@@ -81,7 +81,7 @@ void light(){
 
 [sub_resource type="ShaderMaterial" id=5]
 shader = SubResource( 3 )
-shader_param/normal_preview = true
+shader_param/normal_preview = false
 shader_param/normal_texture = SubResource( 9 )
 
 [sub_resource type="ShaderMaterial" id=6]
@@ -1369,6 +1369,7 @@ size_flags_horizontal = 4
 text = "Create"
 
 [node name="editNormalPop" type="WindowDialog" parent="."]
+visible = true
 margin_left = 312.582
 margin_top = 200.612
 margin_right = 692.582
@@ -1607,6 +1608,8 @@ __meta__ = {
 [connection signal="resized" from="createRectPop/vbox/hbox/vbox2/normalHbox/templatePanel/ScrollContainer" to="createRectPop/vbox/hbox/vbox2/normalHbox/templatePanel" method="_on_ScrollContainer_resized"]
 [connection signal="pressed" from="createRectPop/vbox/CreateBtn" to="." method="_on_createRectPop_CreateBtn_pressed"]
 [connection signal="about_to_show" from="editNormalPop" to="editNormalPop" method="_on_self_about_to_show"]
+[connection signal="drag" from="editNormalPop/vbox/hbox/leftVbox/Panel/normal" to="editNormalPop" method="_on_normal_drag"]
+[connection signal="pressed" from="editNormalPop/vbox/hbox/leftVbox/Panel/normal" to="editNormalPop" method="_on_normal_pressed"]
 [connection signal="value_changed" from="editNormalPop/vbox/hbox/leftVbox/vector3Vbox" to="editNormalPop" method="_on_vector3Vbox_value_changed"]
 [connection signal="pressed" from="editNormalPop/vbox/hbox/rightVbox/localRotateBtn" to="editNormalPop" method="_on_localRotateBtn_pressed"]
 [connection signal="pressed" from="editNormalPop/vbox/hbox/rightVbox/globalRotateBtn" to="editNormalPop" method="_on_globalRotateBtn_pressed"]
